@@ -1,6 +1,7 @@
+from __future__ import annotations
 from collections.abc import Sequence
 from homology.zmodule import FinitelyGeneratedZModule
-from homology.homomorphism import Homomorphism, zero_homomorphism
+from homology.homomorphism import Homomorphism
 
 ARROW_START_SYMBOL = " --"
 ARROW_END_SYMBOL = "--> "
@@ -18,8 +19,9 @@ class ChainComplex:
             homomorphisms = ()
 
         if len(homomorphisms) == len(modules) - 1:
-            homomorphisms = (*homomorphisms,
-                             zero_homomorphism(modules[-1].dimensions(), 1))
+            homomorphisms = [*homomorphisms, Homomorphism.zero(
+                modules[-1], FinitelyGeneratedZModule.zero()
+            )]
 
         if len(modules) != len(homomorphisms):
             raise ValueError("modules and homomorphisms length mismatch")
