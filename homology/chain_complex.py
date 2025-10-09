@@ -29,6 +29,23 @@ class ChainComplex:
         self.modules = modules
         self.homomorphisms = homomorphisms
 
+    def left_pad(self, count: int = 1) -> ChainComplex:
+        zero = ZModule.zero()
+        return ChainComplex(
+            modules=[zero] * count + self.modules,
+            homomorphisms=[Homomorphism.zero(zero, zero)] * (count - 1) +
+            [Homomorphism.zero(zero, self.modules[0])] + self.homomorphisms
+        )
+
+    def right_pad(self, count: int = 1) -> ChainComplex:
+        zero = ZModule.zero()
+        return ChainComplex(
+            modules=self.modules + [zero] * count,
+            homomorphisms=self.homomorphisms
+            + [Homomorphism.zero(self.modules[-1], zero)]
+            + [Homomorphism.zero(zero, zero)] * (count - 1)
+        )
+
     @staticmethod
     def __arrow(index: int) -> str:
         return (ARROW_START_SYMBOL

@@ -90,6 +90,12 @@ class Homomorphism:
                     for k in range(self.domain.dimensions()))
                 for column_index in range(other.domain.dimensions())
             ] for row_index in range(self.codomain.dimensions())],
-            domain=self.domain,
-            codomain=other.codomain
+            domain=other.domain,
+            codomain=self.codomain
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.domain} --> {self.codomain},\n" +
+            "\n".join(str(row) for row in self.matrix)
         )

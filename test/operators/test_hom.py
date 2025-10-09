@@ -1,8 +1,10 @@
 import unittest
 from homology.zmodule import ZModule
+from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
 from homology.homomorphism import Homomorphism
 from homology.chain_complex import ChainComplex
-from homology.operators.hom import Hom, left_hom
+from homology.operators.direct_sum import direct_sum
+from homology.operators.hom import Hom, left_hom, right_hom
 
 
 class TestHom(unittest.TestCase):
@@ -68,8 +70,6 @@ class TestHom(unittest.TestCase):
         Z = ZModule.free(1)
         chain_complex = ChainComplex([Z, Z], [Homomorphism([[2]], Z, Z)])
         hom_chain_complex = left_hom(chain_complex, Z)
-        # print(hom_chain_complex)
-        # print(hom_chain_complex.homomorphisms[0].matrix)
         self.assertEqual(len(hom_chain_complex.modules), 2)
         self.assertEqual(hom_chain_complex.modules[0].rank, 1)
         self.assertEqual(hom_chain_complex.modules[0].torsion_numbers, [])
@@ -78,6 +78,122 @@ class TestHom(unittest.TestCase):
         self.assertEqual(len(hom_chain_complex.homomorphisms), 2)
         self.assertEqual(hom_chain_complex.homomorphisms[0].matrix, [[2]])
         self.assertEqual(hom_chain_complex.homomorphisms[1].matrix, [[0]])
+
+    def test_left_hom_torsion_to_free(self):
+        A = ZModule.free(4)
+        chain_complex = ChainComplex(
+            modules=[A] * 3,
+            homomorphisms=[Homomorphism.identity(A)] * 2
+        )
+        hom_chain_complex = left_hom(chain_complex, ZModule(0, [2, 4, 8]))
+        self.assertEqual(len(hom_chain_complex.modules), 3)
+        self.assertTrue(hom_chain_complex.modules[0].is_zero())
+        self.assertTrue(hom_chain_complex.modules[1].is_zero())
+        self.assertTrue(hom_chain_complex.modules[2].is_zero())
+        self.assertEqual(len(hom_chain_complex.homomorphisms), 3)
+        self.assertTrue(hom_chain_complex.homomorphisms[0].is_zero())
+        self.assertTrue(hom_chain_complex.homomorphisms[1].is_zero())
+        self.assertTrue(hom_chain_complex.homomorphisms[2].is_zero())
+
+    def test_left_hom_splitting(self):
+        A = TorsionCyclicZModule(3)
+        C = TorsionCyclicZModule(6)
+        B, embeddings = direct_sum(A, C)
+
+        chain_complex = ChainComplex(
+            modules=[A, B, C],
+            homomorphisms=[
+                embeddings[0],
+                Homomorphism(
+                    matrix=[[0, 1]],
+                    domain=B,
+                    codomain=C)
+            ]
+        )
+
+        D = ZModule.free(2)
+        hom_chain_complex = left_hom(chain_complex, D)
+
+        self.assertEqual(len(hom_chain_complex.modules), 3)
+        self.assertEqual(hom_chain_complex.modules[0].rank, 0)
+        self.assertEqual(hom_chain_complex.modules[0].torsion_numbers, [3, 3])
+        self.assertEqual(hom_chain_complex.modules[1].rank, 0)
+        self.assertEqual(
+            hom_chain_complex.modules[1].torsion_numbers, [3, 3, 6, 6]
+        )
+        self.assertEqual(hom_chain_complex.modules[2].rank, 0)
+        self.assertEqual(hom_chain_complex.modules[2].torsion_numbers, [6, 6])
+        self.assertEqual(len(hom_chain_complex.homomorphisms), 3)
+        self.assertEqual(
+            hom_chain_complex.homomorphisms[0].matrix,
+            [[1, 0],
+             [0, 1],
+             [0, 0],
+             [0, 0]]
+        )
+        self.assertEqual(
+            hom_chain_complex.homomorphisms[1].matrix,
+            [[0, 0, 1, 0],
+             [0, 0, 0, 1]]
+        )
+        self.assertTrue(hom_chain_complex.homomorphisms[2].is_zero())
+
+    def test_right_hom_to_torsion(self):
+        A = FreeCyclicZModule()
+        B = TorsionCyclicZModule(5)
+        D = TorsionCyclicZModule(10)
+        chain_complex = ChainComplex([A, B], [Homomorphism([[2]], A, B)])
+        hom_chain_complex = right_hom(chain_complex, D)
+        self.assertEqual(len(hom_chain_complex.modules), 2)
+        self.assertEqual(hom_chain_complex.modules[0].rank, 0)
+        self.assertEqual(hom_chain_complex.modules[0].torsion_numbers, [5])
+        self.assertEqual(hom_chain_complex.modules[1].rank, 0)
+        self.assertEqual(hom_chain_complex.modules[1].torsion_numbers, [10])
+        self.assertEqual(len(hom_chain_complex.homomorphisms), 2)
+        self.assertEqual(hom_chain_complex.homomorphisms[0].matrix, [[2]])
+        self.assertEqual(hom_chain_complex.homomorphisms[1].matrix, [[0]])
+
+    def test_right_hom_splitting(self):
+        A = ZModule.free(2)
+        C = FreeCyclicZModule()
+        B, embeddings = direct_sum(A, C)
+
+        chain_complex = ChainComplex(
+            modules=[A, B, C],
+            homomorphisms=[
+                embeddings[0],
+                Homomorphism(
+                    matrix=[[0, 0, 1]],
+                    domain=B,
+                    codomain=C)
+            ]
+        )
+
+        D = TorsionCyclicZModule(2)
+        hom_chain_complex = right_hom(chain_complex, D)
+
+        self.assertEqual(len(hom_chain_complex.modules), 3)
+        self.assertEqual(hom_chain_complex.modules[0].rank, 0)
+        self.assertEqual(hom_chain_complex.modules[0].torsion_numbers, [2])
+        self.assertEqual(hom_chain_complex.modules[1].rank, 0)
+        self.assertEqual(
+            hom_chain_complex.modules[1].torsion_numbers, [2, 2, 2]
+        )
+        self.assertEqual(hom_chain_complex.modules[2].rank, 0)
+        self.assertEqual(hom_chain_complex.modules[2].torsion_numbers, [2, 2])
+        self.assertEqual(len(hom_chain_complex.homomorphisms), 3)
+        self.assertEqual(
+            hom_chain_complex.homomorphisms[0].matrix,
+            [[0],
+             [0],
+             [1]]
+        )
+        self.assertEqual(
+            hom_chain_complex.homomorphisms[1].matrix,
+            [[1, 0, 0],
+             [0, 1, 0]]
+        )
+        self.assertTrue(hom_chain_complex.homomorphisms[2].is_zero())
 
 
 if __name__ == '__main__':

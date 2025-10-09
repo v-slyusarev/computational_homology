@@ -1,6 +1,7 @@
 from __future__ import annotations
 from collections.abc import Sequence
 from typing import Callable
+# from itertools import zip_longest
 from math import gcd
 from homology.zmodule import ZModule
 from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
@@ -17,9 +18,6 @@ class Hom:
         self._calculate_hom_module()
         assert self.module is not None, "module is None!"
         assert self._embeddings is not None, "_embeddings is None!"
-        # assert (
-        #     self._coordinates_to_matrix_indices is not None
-        # ), "_coordinates_to_matrix_indices is None!"
         self.rank = self.module.rank
         self.torsion_numbers = self.module.torsion_numbers
 
@@ -58,18 +56,15 @@ class Hom:
     def _set_zero_module(self):
         self.module = ZModule.zero()
         self._embeddings = [Homomorphism.zero(self.domain, self.codomain)]
-        # self._coordinates_to_matrix_indices = [(0, 0)]
 
     def _set_cyclic_module(self, module):
         self.module = module
         self._embeddings = [
                 Homomorphism([[1]], self.domain, self.codomain)
             ]
-        # self._coordinates_to_matrix_indices = [(0, 0)]
 
     def _set_direct_sum_module(self, modules: Sequence[ZModule]):
-        self.module, self._embeddings = direct_sum(modules)
-        # self.coordinates_to_matrix_indices
+        self.module, self._embeddings = direct_sum(*modules)
 
     def element_from_homomorphism(
         self,
@@ -114,7 +109,7 @@ class Hom:
         return self.module.dimensions()
 
     def is_zero(self) -> bool:
-        return module.is_zero()
+        return self.module.is_zero()
 
     def element(self, coordinates: Sequence[int]) -> ZModule.Element:
         return self.module.element(coordinates)
@@ -125,24 +120,60 @@ class Hom:
     def canonical_generators(self) -> list[ZModule.Element]:
         return self.module.canonical_generators()
 
+    def standard_form(self) -> str:
+        return str(self.module)
+
     def __repr__(self) -> str:
         return f"Hom({self.domain}, {self.codomain})"
 
 
-def left_hom(chain_complex: ChainComplex, hom_domain: ZModule) -> ChainComplex:
-    hom_modules = [
-        Hom(hom_domain, complex_module)
-        for complex_module in chain_complex.modules
-    ]
+def left_hom(
+    chain_complex: ChainComplex,
+    hom_domain: ZModule
+) -> ChainComplex:
+    hom_modules = [Hom(hom_domain, module) for module in chain_complex.modules]
 
+    induced_homomorphisms = _calcuate_induced_homomorphisms(
+        hom_modules,
+        chain_complex.homomorphisms,
+        lambda source_homomorphism, complex_homomorphism: (
+            complex_homomorphism.compose(source_homomorphism)
+        )
+    )
+
+    return ChainComplex(hom_modules, induced_homomorphisms)
+
+
+def right_hom(
+    chain_complex: ChainComplex,
+    hom_codomain: ZModule
+) -> ChainComplex:
+
+    hom_modules = [
+        Hom(module, hom_codomain) for module in chain_complex.modules
+    ][::-1]
+
+    induced_homomorphisms = _calcuate_induced_homomorphisms(
+        hom_modules,
+        chain_complex.homomorphisms[-2::-1],  # invert the order
+        lambda source_homomorphism, complex_homomorphism: (
+            source_homomorphism.compose(complex_homomorphism)
+        )
+    )
+
+    return ChainComplex(hom_modules, induced_homomorphisms)
+
+
+def _calcuate_induced_homomorphisms(
+    hom_modules: Sequence[Hom],
+    original_homomorphisms: Sequence[Homomorphism],
+    homomorphism_mapping: Callable[[Homomorphism, Homomorphism], Homomorphism]
+) -> Sequence[Homomorphism]:
     induced_homomorphisms = []
 
-    # Iterate over the pairs of modules Hom(D, C_i) --d_i^*--> Hom(D, C_{i+1})
-    # to calculate the matrices of d_i^*
     for (this_hom, next_hom, complex_homomorphism) in zip(
-        hom_modules, hom_modules[1:], chain_complex.homomorphisms
+        hom_modules, hom_modules[1:], original_homomorphisms
     ):
-
         # Calculate the matrices for the images of the canonical generators of
         # Hom(D, C_i) under the action of d_i^*:
         generating_homomorphisms = [
@@ -150,8 +181,8 @@ def left_hom(chain_complex: ChainComplex, hom_domain: ZModule) -> ChainComplex:
             for generator in this_hom.canonical_generators()
         ]
 
-        compositions_with_generating_homomorphisms = [
-            complex_homomorphism.compose(homomorphism)
+        images_of_generating_homomorphisms = [
+            homomorphism_mapping(homomorphism, complex_homomorphism)
             for homomorphism in generating_homomorphisms
         ]
 
@@ -159,7 +190,7 @@ def left_hom(chain_complex: ChainComplex, hom_domain: ZModule) -> ChainComplex:
         # respective elements in Hom(D, C_{i+1}):
         images_of_generators_coordinates = [
             next_hom.element_from_homomorphism(homomorphism).coordinates
-            for homomorphism in compositions_with_generating_homomorphisms
+            for homomorphism in images_of_generating_homomorphisms
         ]
 
         # The columns of the matrix for d_i^* are the coordinates of the
@@ -170,10 +201,12 @@ def left_hom(chain_complex: ChainComplex, hom_domain: ZModule) -> ChainComplex:
             in zip(*images_of_generators_coordinates)
         ]
 
-        induced_homomorphisms.append(Homomorphism(
+        induced_homomorphism = Homomorphism(
             matrix=induced_homomorphism_matrix,
             domain=this_hom,
             codomain=next_hom
-        ))
+        )
 
-    return ChainComplex(hom_modules, induced_homomorphisms)
+        induced_homomorphisms.append(induced_homomorphism)
+
+    return induced_homomorphisms
