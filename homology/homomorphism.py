@@ -1,13 +1,13 @@
 from __future__ import annotations
 from collections.abc import Sequence
-from homology.zmodule import FinitelyGeneratedZModule
+from homology.zmodule import ZModule
 
 
 class Homomorphism:
     def __init__(self,
                  matrix: Sequence[Sequence[int]],
-                 domain: FinitelyGeneratedZModule = None,
-                 codomain: FinitelyGeneratedZModule = None):
+                 domain: ZModule = None,
+                 codomain: ZModule = None):
 
         if not matrix or not matrix[0]:
             raise ValueError(
@@ -24,7 +24,7 @@ class Homomorphism:
             )
 
         if domain is None:
-            self.domain = FinitelyGeneratedZModule.free(domain_dimensions)
+            self.domain = ZModule.free(domain_dimensions)
         elif domain_dimensions != domain.dimensions():
             raise ValueError(
                 "domain dimension mismatch"
@@ -35,7 +35,7 @@ class Homomorphism:
         codomain_dimensions = len(matrix)
 
         if codomain is None:
-            self.codomain = FinitelyGeneratedZModule.free(codomain_dimensions)
+            self.codomain = ZModule.free(codomain_dimensions)
         elif codomain_dimensions != codomain.dimensions():
             raise ValueError(
                 f"codomain dimension mismatch: "
@@ -46,13 +46,13 @@ class Homomorphism:
             self.codomain = codomain
 
     @staticmethod
-    def zero(domain: FinitelyGeneratedZModule,
-             codomain: FinitelyGeneratedZModule) -> Homomorphism:
+    def zero(domain: ZModule,
+             codomain: ZModule) -> Homomorphism:
         return Homomorphism([[0 for _ in range(domain.dimensions())]
                              for _ in range(codomain.dimensions())])
 
     @staticmethod
-    def identity(module: FinitelyGeneratedZModule) -> Homomorphism:
+    def identity(module: ZModule) -> Homomorphism:
         return Homomorphism(
             matrix=[[1 if row == column else 0
                     for column in range(module.dimensions())]
@@ -63,8 +63,8 @@ class Homomorphism:
 
     def apply(
         self,
-        element: FinitelyGeneratedZModule.Element
-    ) -> FinitelyGeneratedZModule.Element:
+        element: ZModule.Element
+    ) -> ZModule.Element:
         if len(element.coordinates) != self.domain.dimensions():
             raise ValueError("dimension mismatch")
         return self.codomain.element([

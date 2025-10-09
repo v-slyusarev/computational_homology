@@ -1,5 +1,5 @@
 import unittest
-from homology.zmodule import FinitelyGeneratedZModule
+from homology.zmodule import ZModule
 from homology.homomorphism import Homomorphism
 from homology.operators.direct_sum import direct_sum
 
@@ -12,11 +12,11 @@ class TestDirectSum(unittest.TestCase):
         self.assertEqual(embeddings, [])
 
     def test_sum_with_zero(self):
-        module = FinitelyGeneratedZModule(3, [2, 4, 8])
+        module = ZModule(3, [2, 4, 8])
         sum_module, embeddings = direct_sum([
-            FinitelyGeneratedZModule.zero(),
+            ZModule.zero(),
             module,
-            FinitelyGeneratedZModule.zero()
+            ZModule.zero()
         ])
 
         self.assertEqual(sum_module.rank, 3)
@@ -27,11 +27,11 @@ class TestDirectSum(unittest.TestCase):
         self.assertEqual(embeddings[2].matrix, [[0] for _ in range(6)])
 
     def test_sum_with_zero_inside(self):
-        A = FinitelyGeneratedZModule(1, [2])
-        B = FinitelyGeneratedZModule(2, [])
+        A = ZModule(1, [2])
+        B = ZModule(2, [])
         sum_module, embeddings = direct_sum([
             A,
-            FinitelyGeneratedZModule.zero(),
+            ZModule.zero(),
             B
         ])
 
@@ -53,9 +53,9 @@ class TestDirectSum(unittest.TestCase):
              [0, 0]])
 
     def test_sum_three(self):
-        A = FinitelyGeneratedZModule(0, [2])
-        B = FinitelyGeneratedZModule(2, [])
-        C = FinitelyGeneratedZModule(1, [2, 3])
+        A = ZModule(0, [2])
+        B = ZModule(2, [])
+        C = ZModule(1, [2, 3])
         sum_module, embeddings = direct_sum([
             A,
             B,

@@ -3,26 +3,19 @@ from collections.abc import Sequence
 from typing import Callable
 from math import gcd
 from homology.homomorphism import Homomorphism
-from homology.zmodule import FinitelyGeneratedZModule
+from homology.zmodule import ZModule
 from homology.operators.direct_sum import direct_sum
 from homology.chain_complex import ChainComplex
 
 
-def hom(domain: FinitelyGeneratedZModule,
-        codomain: FinitelyGeneratedZModule) -> (
-            FinitelyGeneratedZModule,
-            Callable[
-                Sequence[Sequence[int]],
-                FinitelyGeneratedZModule.Element
-            ],
-            Callable[
-                Sequence[Sequence[int]],
-                FinitelyGeneratedZModule.Element
-            ]
+def hom(domain: ZModule, codomain: ZModule) -> (
+            ZModule,
+            Callable[Sequence[Sequence[int]], ZModule.Element],
+            Callable[ZModule.Element, Sequence[Sequence[int]]]
         ):
 
     if domain.is_zero() or codomain.is_zero():
-        hom_module = FinitelyGeneratedZModule.zero()
+        hom_module = ZModule.zero()
         return hom_module, lambda _: hom_module.zero_element(), lambda _: [[0]]
 
     coordinates_to_matrix = []
@@ -31,11 +24,11 @@ def hom(domain: FinitelyGeneratedZModule,
     # to maps from domain's basis elements to codomain's basis elements
 
     # Hom(Z, Z) = Z
-    Z_to_Z_summands = [FinitelyGeneratedZModule.free(1)] * domain.rank
+    Z_to_Z_summands = [ZModule.free(1)] * domain.rank
 
     #  Hom(Z / qZ, Z) = 0
     torsion_to_Z_summands = [
-            FinitelyGeneratedZModule.zero() for _ in domain.torsion_numbers
+            ZModule.zero() for _ in domain.torsion_numbers
         ]
 
     # Repeat this for all Z summands of codomain
@@ -50,8 +43,7 @@ def hom(domain: FinitelyGeneratedZModule,
     for q_index, q in enumerate(codomain.torsion_numbers):
         row = codomain.rank + q_index
         # Hom(Z, Z / qZ) = Z/ qZ
-        Z_to_torsion_summands = ([FinitelyGeneratedZModule(0, [q])]
-                                 * domain.rank)
+        Z_to_torsion_summands = ([ZModule(0, [q])] * domain.rank)
         to_torsion_summands += Z_to_torsion_summands
         coordinates_to_matrix += [(row, column)
                                   for column in range(domain.rank)]
@@ -62,13 +54,11 @@ def hom(domain: FinitelyGeneratedZModule,
             column = domain.rank + p_index
             hom_torsion = gcd(p, q)
             if gcd(p, q) >= 2:
-                torsion_to_torsion_summands.append(
-                    FinitelyGeneratedZModule(0, [hom_torsion])
-                )
+                torsion_to_torsion_summands.append(ZModule(0, [hom_torsion]))
                 coordinates_to_matrix.append((row, column))
             else:
                 torsion_to_torsion_summands.append(
-                    FinitelyGeneratedZModule.zero()
+                    ZModule.zero()
                 )
         to_torsion_summands += torsion_to_torsion_summands
 
@@ -91,7 +81,7 @@ def hom(domain: FinitelyGeneratedZModule,
     # canonical coordinates, returns a matrix of the corresponding
     # homomorphism with respect to the canonical coordinates
     # of its domain and codomain
-    def hom_to_matrix(element: FinitelyGeneratedZModule.Element):
+    def hom_to_matrix(element: ZModule.Element):
         matrix = Homomorphism.zero(domain, codomain).matrix
         for (coordinate, (row, column)) in zip(element.coordinates,
                                                coordinates_to_matrix):
@@ -101,8 +91,7 @@ def hom(domain: FinitelyGeneratedZModule,
     return hom_module, matrix_to_hom, hom_to_matrix
 
 
-def left_hom(chain_complex: ChainComplex,
-             hom_domain: FinitelyGeneratedZModule) -> ChainComplex:
+def left_hom(chain_complex: ChainComplex, hom_domain: ZModule) -> ChainComplex:
     hom_modules_with_functions = [
         hom(hom_domain, complex_module)
         for complex_module in chain_complex.modules

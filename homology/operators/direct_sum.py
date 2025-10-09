@@ -1,15 +1,13 @@
 from __future__ import annotations
 from collections.abc import Sequence
-from homology.zmodule import FinitelyGeneratedZModule
+from homology.zmodule import ZModule
 from homology.homomorphism import Homomorphism
 
 
-def direct_sum(modules: Sequence[FinitelyGeneratedZModule]) -> (
-    FinitelyGeneratedZModule,
-    Sequence[Homomorphism]
-):
+def direct_sum(modules: Sequence[ZModule]) -> (ZModule,
+                                               Sequence[Homomorphism]):
 
-    direct_sum_module = FinitelyGeneratedZModule(
+    direct_sum_module = ZModule(
         rank=sum(module.rank for module in modules),
         torsion_numbers=[factor for module in modules
                          for factor in module.torsion_numbers]

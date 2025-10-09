@@ -9,7 +9,7 @@ IDEAL_SEPARATOR_SYMBOL = " + "
 COORDINATE_SEPARATOR_SYMBOL = ", "
 
 
-class FinitelyGeneratedZModule:
+class ZModule:
     def __init__(self,
                  rank: int,
                  torsion_numbers: Sequence[int]):
@@ -22,12 +22,12 @@ class FinitelyGeneratedZModule:
         self.torsion_numbers = torsion_numbers
 
     @staticmethod
-    def zero() -> FinitelyGeneratedZModule:
-        return FinitelyGeneratedZModule(0, [])
+    def zero() -> ZModule:
+        return ZModule(0, [])
 
     @staticmethod
-    def free(rank: int) -> FinitelyGeneratedZModule:
-        return FinitelyGeneratedZModule(rank, [])
+    def free(rank: int) -> ZModule:
+        return ZModule(rank, [])
 
     def dimensions(self) -> int:
         return max(self.rank + len(self.torsion_numbers), 1)
@@ -35,16 +35,13 @@ class FinitelyGeneratedZModule:
     def is_zero(self) -> bool:
         return self.rank == 0 and not self.torsion_numbers
 
-    def element(
-        self,
-        coordinates: Sequence[int]
-    ) -> FinitelyGeneratedZModule.Element:
-        return FinitelyGeneratedZModule.Element(self, coordinates)
+    def element(self, coordinates: Sequence[int]) -> ZModule.Element:
+        return ZModule.Element(self, coordinates)
 
-    def zero_element(self) -> FinitelyGeneratedZModule.Element:
+    def zero_element(self) -> ZModule.Element:
         return self.element([0 for _ in range(self.dimensions())])
 
-    def canonical_generators(self) -> list[FinitelyGeneratedZModule.Element]:
+    def canonical_generators(self) -> list[ZModule.Element]:
         if self.is_zero():
             return [self.zero_element()]
 
@@ -85,15 +82,12 @@ class FinitelyGeneratedZModule:
     @staticmethod
     def __torsion_module_repr(torsion_numbers: Sequence[int]) -> str:
         return DIRECT_SUM_SEPARATOR_SYMBOL.join(
-            FinitelyGeneratedZModule.__quotient_module_repr(value)
+            ZModule.__quotient_module_repr(value)
             for value in torsion_numbers
         )
 
     class Element:
-        def __init__(self,
-                     module: FinitelyGeneratedZModule,
-                     coordinates: Sequence[int]):
-
+        def __init__(self, module: ZModule, coordinates: Sequence[int]):
             if module is None or coordinates is None:
                 raise ValueError("arguments must not be None")
 
@@ -104,10 +98,7 @@ class FinitelyGeneratedZModule:
             self.module = module
             self.coordinates = coordinates
 
-        def __add__(
-            self,
-            other: FinitelyGeneratedZModule.Element
-        ) -> FinitelyGeneratedZModule.Element:
+        def __add__(self, other: ZModule.Element) -> ZModule.Element:
             if (
                 self.module.rank != other.module.rank or
                 self.module.torsion_numbers != other.module.torsion_numbers
@@ -120,11 +111,8 @@ class FinitelyGeneratedZModule:
                 in zip(self.coordinates, other.coordinates)
             ])
 
-        def __radd__(
-            self,
-            other: FinitelyGeneratedZModule.Element
-        ) -> FinitelyGeneratedZModule.Element:
-            if other is not FinitelyGeneratedZModule.Element:
+        def __radd__(self, other: ZModule.Element) -> ZModule.Element:
+            if other is not ZModule.Element:
                 return self
 
             return self + other

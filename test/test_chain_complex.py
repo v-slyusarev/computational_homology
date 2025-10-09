@@ -1,19 +1,19 @@
 import unittest
-from homology.zmodule import FinitelyGeneratedZModule
+from homology.zmodule import ZModule
 from homology.homomorphism import Homomorphism
 from homology.chain_complex import ChainComplex
 
 
 class TestChainComplex(unittest.TestCase):
     def test_printing_Z(self):
-        module = FinitelyGeneratedZModule(1, [])
+        module = ZModule(1, [])
         chain_complex = ChainComplex([module], [])
         self.assertEqual(str(chain_complex), '0 --d0--> ℤ --d1--> 0')
 
     def test_printing_split_sequence(self):
-        A = FinitelyGeneratedZModule(1, [])
-        B = FinitelyGeneratedZModule(1, [2])
-        C = FinitelyGeneratedZModule(0, [2])
+        A = ZModule(1, [])
+        B = ZModule(1, [2])
+        C = ZModule(0, [2])
         chain_complex = ChainComplex(
             [A, B, C],
             [Homomorphism.zero(A, B), Homomorphism.zero(B, C)]
@@ -24,12 +24,12 @@ class TestChainComplex(unittest.TestCase):
         )
 
     def test_printing_long_sequence(self):
-        A = FinitelyGeneratedZModule(1, [])
-        B = FinitelyGeneratedZModule(1, [2])
-        C = FinitelyGeneratedZModule(0, [2])
-        D = FinitelyGeneratedZModule(0, [])
-        E = FinitelyGeneratedZModule(1, [])
-        F = FinitelyGeneratedZModule(1, [])
+        A = ZModule(1, [])
+        B = ZModule(1, [2])
+        C = ZModule(0, [2])
+        D = ZModule(0, [])
+        E = ZModule(1, [])
+        F = ZModule(1, [])
         chain_complex = ChainComplex(
             [A, B, C, D, E, F],
             [Homomorphism.zero(A, B), Homomorphism.zero(B, C),
@@ -43,7 +43,7 @@ class TestChainComplex(unittest.TestCase):
         )
 
     def test_zero_homomorphism(self):
-        module = FinitelyGeneratedZModule(1, [])
+        module = ZModule(1, [])
         chain_complex = ChainComplex([module], [])
         self.assertEqual(chain_complex.homomorphisms[0].matrix,
                          Homomorphism.zero(module, module).matrix)
