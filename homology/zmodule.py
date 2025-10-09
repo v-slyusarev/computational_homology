@@ -25,9 +25,9 @@ class ZModule:
     def zero() -> ZModule:
         return ZModule(0, [])
 
-    @staticmethod
-    def free(rank: int) -> ZModule:
-        return ZModule(rank, [])
+    @classmethod
+    def free(cls, rank: int) -> ZModule:
+        return cls(rank, [])
 
     def dimensions(self) -> int:
         return max(self.rank + len(self.torsion_numbers), 1)
@@ -96,7 +96,10 @@ class ZModule:
                                  "number of dimensions in module")
 
             self.module = module
-            self.coordinates = coordinates
+            if self.module.is_zero():
+                self.coordinates = [0]
+            else:
+                self.coordinates = coordinates
 
         def __add__(self, other: ZModule.Element) -> ZModule.Element:
             if (

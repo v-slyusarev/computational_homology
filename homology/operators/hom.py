@@ -2,142 +2,178 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Callable
 from math import gcd
-from homology.homomorphism import Homomorphism
 from homology.zmodule import ZModule
+from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
+from homology.homomorphism import Homomorphism
 from homology.operators.direct_sum import direct_sum
+from homology.operators.cyclic_summands import cyclic_summands
 from homology.chain_complex import ChainComplex
 
 
-def hom(domain: ZModule, codomain: ZModule) -> (
-            ZModule,
-            Callable[Sequence[Sequence[int]], ZModule.Element],
-            Callable[ZModule.Element, Sequence[Sequence[int]]]
-        ):
+class Hom:
+    def __init__(self, domain: ZModule, codomain: ZModule):
+        self.domain = domain
+        self.codomain = codomain
+        self._calculate_hom_module()
+        assert self.module is not None, "module is None!"
+        assert self._embeddings is not None, "_embeddings is None!"
+        # assert (
+        #     self._coordinates_to_matrix_indices is not None
+        # ), "_coordinates_to_matrix_indices is None!"
+        self.rank = self.module.rank
+        self.torsion_numbers = self.module.torsion_numbers
 
-    if domain.is_zero() or codomain.is_zero():
-        hom_module = ZModule.zero()
-        return hom_module, lambda _: hom_module.zero_element(), lambda _: [[0]]
+    def _calculate_hom_module(self):
+        if self.domain.is_zero() or self.codomain.is_zero():
+            self._set_zero_module()
+            return
 
-    coordinates_to_matrix = []
+        # If domain and codomain are cyclic, then find Hom directly:
+        if isinstance(self.domain, FreeCyclicZModule):
+            if isinstance(self.codomain,
+                          (FreeCyclicZModule, TorsionCyclicZModule)):
+                # Hom(Z, B) is isomorphic to B
+                self._set_cyclic_module(self.codomain)
+                return
+        elif isinstance(self.domain, TorsionCyclicZModule):
+            if isinstance(self.codomain, FreeCyclicZModule):
+                # Hom(Z/pZ, Z) is trivial
+                self._set_zero_module()
+                return
+            elif isinstance(self.codomain, TorsionCyclicZModule):
+                # Hom(Z/pZ, Z/qZ) = Z / gcd(p, q)Z
+                torsion = gcd(self.domain.torsion, self.codomain.torsion)
+                if torsion >= 2:
+                    self._set_cyclic_module(TorsionCyclicZModule(torsion))
+                else:
+                    self._set_zero_module()
+                return
 
-    # Represent the Hom as a direct sum of cyclic modules that correspond
-    # to maps from domain's basis elements to codomain's basis elements
+        self._set_direct_sum_module([
+            Hom(domain_summand, codomain_summand).module
+            for codomain_summand in cyclic_summands(self.codomain)
+            for domain_summand in cyclic_summands(self.domain)
+        ])
 
-    # Hom(Z, Z) = Z
-    Z_to_Z_summands = [ZModule.free(1)] * domain.rank
+    def _set_zero_module(self):
+        self.module = ZModule.zero()
+        self._embeddings = [Homomorphism.zero(self.domain, self.codomain)]
+        # self._coordinates_to_matrix_indices = [(0, 0)]
 
-    #  Hom(Z / qZ, Z) = 0
-    torsion_to_Z_summands = [
-            ZModule.zero() for _ in domain.torsion_numbers
-        ]
+    def _set_cyclic_module(self, module):
+        self.module = module
+        self._embeddings = [
+                Homomorphism([[1]], self.domain, self.codomain)
+            ]
+        # self._coordinates_to_matrix_indices = [(0, 0)]
 
-    # Repeat this for all Z summands of codomain
-    to_Z_summands = ((Z_to_Z_summands + torsion_to_Z_summands)
-                     * codomain.rank)
-    coordinates_to_matrix += [(row, column)
-                              for row in range(codomain.rank)
-                              for column in range(domain.rank)]
+    def _set_direct_sum_module(self, modules: Sequence[ZModule]):
+        self.module, self._embeddings = direct_sum(modules)
+        # self.coordinates_to_matrix_indices
 
-    to_torsion_summands = []
-
-    for q_index, q in enumerate(codomain.torsion_numbers):
-        row = codomain.rank + q_index
-        # Hom(Z, Z / qZ) = Z/ qZ
-        Z_to_torsion_summands = ([ZModule(0, [q])] * domain.rank)
-        to_torsion_summands += Z_to_torsion_summands
-        coordinates_to_matrix += [(row, column)
-                                  for column in range(domain.rank)]
-
-        # Hom(Z / pZ, Z / qZ) = Z / gcd(p, q) Z
-        torsion_to_torsion_summands = []
-        for p_index, p in enumerate(domain.torsion_numbers):
-            column = domain.rank + p_index
-            hom_torsion = gcd(p, q)
-            if gcd(p, q) >= 2:
-                torsion_to_torsion_summands.append(ZModule(0, [hom_torsion]))
-                coordinates_to_matrix.append((row, column))
-            else:
-                torsion_to_torsion_summands.append(
-                    ZModule.zero()
-                )
-        to_torsion_summands += torsion_to_torsion_summands
-
-    summands = to_Z_summands + to_torsion_summands
-
-    hom_module, embeddings = direct_sum(summands)
-
-    # Given a matrix of a homomorphism, returns a list of its canonical
-    # coordinates in the Hom module.
-    def matrix_to_hom(matrix: Sequence[Sequence[int]]):
-        flattened_matrix = [value for row in matrix for value in row]
+    def element_from_homomorphism(
+        self,
+        homomorphism: Homomorphism
+    ) -> ZModule.Element:
+        flattened_matrix = [value
+                            for row in homomorphism.matrix
+                            for value in row]
 
         return sum(
-            embedding.apply(summand.element([value]))
-            for (value, summand, embedding)
-            in zip(flattened_matrix, summands, embeddings)
+            embedding.apply(embedding.domain.element([value]))
+            for (value, embedding)
+            in zip(flattened_matrix, self._embeddings)
         )
 
-    # Given an element of the Hom module represented with its
-    # canonical coordinates, returns a matrix of the corresponding
-    # homomorphism with respect to the canonical coordinates
-    # of its domain and codomain
-    def hom_to_matrix(element: ZModule.Element):
-        matrix = Homomorphism.zero(domain, codomain).matrix
-        for (coordinate, (row, column)) in zip(element.coordinates,
-                                               coordinates_to_matrix):
-            matrix[row][column] = coordinate
-        return matrix
+    def homomorphism_from_element(
+        self,
+        element: ZModule.Element
+    ) -> Homomorphism:
+        matrix = Homomorphism.zero(self.domain, self.codomain).matrix
 
-    return hom_module, matrix_to_hom, hom_to_matrix
+        # List matrix indices that correspond to nontrivial summands
+        coordinates_to_matrix_indices = [
+            (row_index, column_index)
+            for row_index in range(self.codomain.dimensions())
+            for column_index in range(self.domain.dimensions())
+            if not self._embeddings[
+                row_index * self.domain.dimensions() + column_index
+            ].is_zero()
+        ]
+
+        for (coordinate, (row, column)) in zip(
+            element.coordinates, coordinates_to_matrix_indices
+        ):
+            matrix[row][column] = coordinate
+
+        return Homomorphism(
+            matrix, self.domain, self.codomain
+        )
+
+    def dimensions(self):
+        return self.module.dimensions()
+
+    def is_zero(self) -> bool:
+        return module.is_zero()
+
+    def element(self, coordinates: Sequence[int]) -> ZModule.Element:
+        return self.module.element(coordinates)
+
+    def zero_element(self) -> ZModule.Element:
+        return self.module.zero_element()
+
+    def canonical_generators(self) -> list[ZModule.Element]:
+        return self.module.canonical_generators()
+
+    def __repr__(self) -> str:
+        return f"Hom({self.domain}, {self.codomain})"
 
 
 def left_hom(chain_complex: ChainComplex, hom_domain: ZModule) -> ChainComplex:
-    hom_modules_with_functions = [
-        hom(hom_domain, complex_module)
+    hom_modules = [
+        Hom(hom_domain, complex_module)
         for complex_module in chain_complex.modules
     ]
-    hom_modules = [hom_module
-                   for (hom_module, _, _) in hom_modules_with_functions]
 
-    hom_homomorphisms = []
+    induced_homomorphisms = []
 
     # Iterate over the pairs of modules Hom(D, C_i) --d_i^*--> Hom(D, C_{i+1})
     # to calculate the matrices of d_i^*
-    for ((this_hom_module, _, this_hom_to_matrix),
-         (next_hom_module, next_matrix_to_hom, _),
-         complex_homomorphism) in zip(hom_modules_with_functions,
-                                      hom_modules_with_functions[1:],
-                                      chain_complex.homomorphisms):
+    for (this_hom, next_hom, complex_homomorphism) in zip(
+        hom_modules, hom_modules[1:], chain_complex.homomorphisms
+    ):
 
         # Calculate the matrices for the images of the canonical generators of
         # Hom(D, C_i) under the action of d_i^*:
-        generators_matrices = [this_hom_to_matrix(generator)
-                               for generator
-                               in this_hom_module.canonical_generators()]
+        generating_homomorphisms = [
+            this_hom.homomorphism_from_element(generator)
+            for generator in this_hom.canonical_generators()
+        ]
 
-        images_of_generators_matrices = [
-            complex_homomorphism.compose(
-                Homomorphism(generator_matrix, hom_domain, next_hom_module)
-            ).matrix for generator_matrix in generators_matrices
+        compositions_with_generating_homomorphisms = [
+            complex_homomorphism.compose(homomorphism)
+            for homomorphism in generating_homomorphisms
         ]
 
         # Now convert these matrices to the canonical coordinates of their
         # respective elements in Hom(D, C_{i+1}):
         images_of_generators_coordinates = [
-            next_matrix_to_hom(image_matrix).coordinates
-            for image_matrix in images_of_generators_matrices
+            next_hom.element_from_homomorphism(homomorphism).coordinates
+            for homomorphism in compositions_with_generating_homomorphisms
         ]
 
         # The columns of the matrix for d_i^* are the coordinates of the
         # images of the canonical generators of C_i:
-        hom_homomorphism_matrix = [list(coordinates_for_generator)
-                                   for coordinates_for_generator
-                                   in zip(*images_of_generators_coordinates)]
+        induced_homomorphism_matrix = [
+            list(coordinates_for_generator)
+            for coordinates_for_generator
+            in zip(*images_of_generators_coordinates)
+        ]
 
-        hom_homomorphisms.append(Homomorphism(
-            matrix=hom_homomorphism_matrix,
-            domain=this_hom_module,
-            codomain=next_hom_module
+        induced_homomorphisms.append(Homomorphism(
+            matrix=induced_homomorphism_matrix,
+            domain=this_hom,
+            codomain=next_hom
         ))
 
-    return ChainComplex(hom_modules, hom_homomorphisms)
+    return ChainComplex(hom_modules, induced_homomorphisms)

@@ -2,68 +2,67 @@ import unittest
 from homology.zmodule import ZModule
 from homology.homomorphism import Homomorphism
 from homology.chain_complex import ChainComplex
-from homology.operators.hom import hom, left_hom
+from homology.operators.hom import Hom, left_hom
 
 
 class TestHom(unittest.TestCase):
     def test_hom_from_0(self):
         A = ZModule.zero()
         B = ZModule(3, [2, 4, 6])
-        homAB, _, _ = hom(A, B)
+        homAB = Hom(A, B)
         self.assertEqual(homAB.rank, 0)
         self.assertEqual(homAB.torsion_numbers, [])
 
     def test_hom_to_0(self):
         A = ZModule(3, [2, 4, 6])
         B = ZModule.zero()
-        homAB, _, _ = hom(A, B)
+        homAB = Hom(A, B)
         self.assertEqual(homAB.rank, 0)
         self.assertEqual(homAB.torsion_numbers, [])
 
     def test_hom_free_to_free(self):
         A = ZModule(3, [])
         B = ZModule(7, [])
-        homAB, _, _ = hom(A, B)
+        homAB = Hom(A, B)
         self.assertEqual(homAB.rank, 21)
         self.assertEqual(homAB.torsion_numbers, [])
 
     def test_hom_free_to_torsion(self):
         A = ZModule(3, [])
         B = ZModule(0, [2])
-        homAB, _, _ = hom(A, B)
+        homAB = Hom(A, B)
         self.assertEqual(homAB.rank, 0)
         self.assertEqual(homAB.torsion_numbers, [2, 2, 2])
 
     def test_hom_torsion_to_free(self):
         A = ZModule(0, [3])
         B = ZModule(2, [])
-        homAB, _, _ = hom(A, B)
+        homAB = Hom(A, B)
         self.assertEqual(homAB.rank, 0)
         self.assertEqual(homAB.torsion_numbers, [])
 
     def test_hom_torsion_to_torsion(self):
         A = ZModule(0, [10])
         B = ZModule(0, [15])
-        homAB, _, _ = hom(A, B)
+        homAB = Hom(A, B)
         self.assertEqual(homAB.rank, 0)
         self.assertEqual(homAB.torsion_numbers, [5])
 
     def test_conversions(self):
         A = ZModule(1, [2, 4])
         B = ZModule(2, [5, 10])
-        homAB, matrix_to_hom, hom_to_matrix = hom(A, B)
+        homAB = Hom(A, B)
         self.assertEqual(homAB.rank, 2)
         self.assertEqual(homAB.torsion_numbers, [5, 10, 2, 2])
-        matrix = [
-            [1, 0, 0],
-            [2, 0, 0],
-            [3, 0, 0],
-            [4, 1, 1],
-        ]
-        hom_element = matrix_to_hom(matrix)
+        matrix = [[1, 0, 0],
+                  [2, 0, 0],
+                  [3, 0, 0],
+                  [4, 1, 1]]
+        homomorphism = Homomorphism(matrix, A, B)
+        hom_element = homAB.element_from_homomorphism(homomorphism)
         self.assertEqual(hom_element.coordinates, [1, 2, 3, 4, 1, 1])
-        restored_matrix = hom_to_matrix(hom_element)
-        self.assertEqual(restored_matrix, matrix)
+        restored_homomorphism = homAB.homomorphism_from_element(hom_element)
+        self.assertEqual(restored_homomorphism.matrix, matrix)
 
     def test_left_hom_Z_to_Z(self):
         Z = ZModule.free(1)

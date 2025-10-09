@@ -51,6 +51,9 @@ class Homomorphism:
         return Homomorphism([[0 for _ in range(domain.dimensions())]
                              for _ in range(codomain.dimensions())])
 
+    def is_zero(self) -> bool:
+        return all(value == 0 for row in self.matrix for value in row)
+
     @staticmethod
     def identity(module: ZModule) -> Homomorphism:
         return Homomorphism(
