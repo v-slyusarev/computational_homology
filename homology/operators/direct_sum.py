@@ -11,9 +11,8 @@ def direct_sum(modules: Sequence[FinitelyGeneratedZModule]) -> (
 
     direct_sum_module = FinitelyGeneratedZModule(
         rank=sum(module.rank for module in modules),
-        torsion_numbers=[factor
-                           for module in modules
-                           for factor in module.torsion_numbers]
+        torsion_numbers=[factor for module in modules
+                         for factor in module.torsion_numbers]
      )
 
     embeddings = []

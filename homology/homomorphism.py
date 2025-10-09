@@ -61,13 +61,32 @@ class Homomorphism:
             codomain=module
         )
 
-    # @classmethod
-    def apply_to(self, element: FinitelyGeneratedZModule.Element):
+    def apply(
+        self,
+        element: FinitelyGeneratedZModule.Element
+    ) -> FinitelyGeneratedZModule.Element:
         if len(element.coordinates) != self.domain.dimensions():
             raise ValueError("dimension mismatch")
-        return self.domain.element([
+        return self.codomain.element([
             sum(element_coordinate * basis_images
                 for (element_coordinate, basis_images) in zip(
                     element.coordinates, row
                 ))
             for row in self.matrix])
+
+    def compose(self, other: Homomorphism) -> Homomorphism:
+        if (
+            self.domain.rank != other.codomain.rank or
+            self.domain.torsion_numbers != other.codomain.torsion_numbers
+        ):
+            raise ValueError("domain and codomain mismatch")
+
+        return Homomorphism(
+            matrix=[[
+                sum(self.matrix[row_index][k] * other.matrix[k][column_index]
+                    for k in range(self.domain.dimensions()))
+                for column_index in range(other.domain.dimensions())
+            ] for row_index in range(self.codomain.dimensions())],
+            domain=self.domain,
+            codomain=other.codomain
+        )
