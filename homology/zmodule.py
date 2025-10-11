@@ -99,7 +99,11 @@ class ZModule:
             if self.module.is_zero():
                 self.coordinates = [0]
             else:
-                self.coordinates = coordinates
+                self.coordinates = coordinates[:module.rank] + [
+                    coordinate % torsion for (coordinate, torsion) in zip(
+                        coordinates[module.rank:], module.torsion_numbers
+                    )
+                ]
 
         def __add__(self, other: ZModule.Element) -> ZModule.Element:
             if (
@@ -124,25 +128,18 @@ class ZModule:
             if self.module.is_zero():
                 return "0"
 
-            normalized_coordinates = []
-            torsion_coordinates = []
-
-            if self.module.rank > 0:
-                normalized_coordinates += (
-                    str(value) for value in self.coordinates[:self.module.rank]
+            string_coordinates = [
+                str(value) for value in self.coordinates[:self.module.rank]
+            ] + [
+                str(value) + self.__ideal_repr(torsion_number)
+                for (value, torsion_number) in zip(
+                    self.coordinates[self.module.rank:],
+                    self.module.torsion_numbers
                 )
-                torsion_coordinates = self.coordinates[self.module.rank:]
-            else:
-                torsion_coordinates = self.coordinates
-
-            normalized_coordinates += [
-                str(value % invariant_factor)
-                + self.__ideal_repr(invariant_factor)
-                for (value, invariant_factor)
-                in zip(torsion_coordinates, self.module.torsion_numbers)
             ]
+
             repr_string = COORDINATE_SEPARATOR_SYMBOL.join(
-                normalized_coordinates
+                string_coordinates
             )
 
             if len(self.coordinates) > 1:
@@ -151,5 +148,5 @@ class ZModule:
             return repr_string
 
         @staticmethod
-        def __ideal_repr(invariant_factor: int) -> str:
-            return IDEAL_SEPARATOR_SYMBOL + str(invariant_factor) + Z_SYMBOL
+        def __ideal_repr(torsion_number: int) -> str:
+            return IDEAL_SEPARATOR_SYMBOL + str(torsion_number) + Z_SYMBOL

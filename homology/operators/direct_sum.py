@@ -4,8 +4,7 @@ from homology.zmodule import ZModule
 from homology.homomorphism import Homomorphism
 
 
-def direct_sum(*modules: Sequence[ZModule]) -> (ZModule,
-                                                Sequence[Homomorphism]):
+def direct_sum(*modules: ZModule) -> (ZModule, Sequence[Homomorphism]):
 
     direct_sum_module = ZModule(
         rank=sum(module.rank for module in modules),
