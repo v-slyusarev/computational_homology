@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections.abc import Sequence
-from homology.zmodule import ZModule
-from homology.homomorphism import Homomorphism
+from module_theory.zmodule import ZModule
+from module_theory.homomorphism import Homomorphism
 
 
 def direct_sum(*modules: ZModule) -> (ZModule, Sequence[Homomorphism]):

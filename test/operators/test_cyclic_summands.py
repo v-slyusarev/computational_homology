@@ -1,7 +1,7 @@
 import unittest
-from homology.zmodule import ZModule
-from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
-from homology.operators.cyclic_summands import cyclic_summands
+from module_theory.zmodule import ZModule
+from module_theory.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
+from module_theory.operators.cyclic_summands import cyclic_summands
 
 
 class TestCyclicSummands(unittest.TestCase):

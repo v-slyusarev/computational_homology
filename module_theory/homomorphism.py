@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Sequence
-from homology.zmodule import ZModule
+from module_theory.zmodule import ZModule
 
 
 class Homomorphism:

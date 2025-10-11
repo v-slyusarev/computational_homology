@@ -3,12 +3,12 @@ from collections.abc import Sequence
 from typing import Callable
 # from itertools import zip_longest
 from math import gcd
-from homology.zmodule import ZModule
-from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
-from homology.homomorphism import Homomorphism
-from homology.operators.direct_sum import direct_sum
-from homology.operators.cyclic_summands import cyclic_summands
-from homology.chain_complex import ChainComplex
+from module_theory.zmodule import ZModule
+from module_theory.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
+from module_theory.homomorphism import Homomorphism
+from module_theory.operators.direct_sum import direct_sum
+from module_theory.operators.cyclic_summands import cyclic_summands
+from module_theory.chain_complex import ChainComplex
 
 
 class Hom:

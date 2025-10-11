@@ -1,7 +1,7 @@
 import unittest
-from homology.zmodule import ZModule
-from homology.homomorphism import Homomorphism
-from homology.chain_complex import ChainComplex
+from module_theory.zmodule import ZModule
+from module_theory.homomorphism import Homomorphism
+from module_theory.chain_complex import ChainComplex
 
 
 class TestChainComplex(unittest.TestCase):

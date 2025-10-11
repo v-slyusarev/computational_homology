@@ -1,7 +1,7 @@
 import unittest
-from homology.zmodule import ZModule
-from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
-from homology.operators.tensor_product import TensorProduct
+from module_theory.zmodule import ZModule
+from module_theory.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
+from module_theory.operators.tensor_product import TensorProduct
 
 
 class TestTensorProduct(unittest.TestCase):

@@ -1,6 +1,6 @@
 from collections.abc import Sequence
-from homology.zmodule import ZModule
-from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
+from module_theory.zmodule import ZModule
+from module_theory.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
 
 
 def cyclic_summands(module: ZModule) -> Sequence[ZModule]:

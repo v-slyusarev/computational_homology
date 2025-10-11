@@ -1,6 +1,6 @@
 import unittest
-from homology.zmodule import ZModule
-from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
+from module_theory.zmodule import ZModule
+from module_theory.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
 
 
 class TestCyclicZModule(unittest.TestCase):

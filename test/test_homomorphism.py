@@ -1,6 +1,6 @@
 import unittest
-from homology.zmodule import ZModule
-from homology.homomorphism import Homomorphism
+from module_theory.zmodule import ZModule
+from module_theory.homomorphism import Homomorphism
 
 
 class TestHomomorphism(unittest.TestCase):

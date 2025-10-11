@@ -1,5 +1,5 @@
 from __future__ import annotations
-from homology.zmodule import ZModule
+from module_theory.zmodule import ZModule
 
 
 class FreeCyclicZModule(ZModule):

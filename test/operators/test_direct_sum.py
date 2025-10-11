@@ -1,7 +1,7 @@
 import unittest
-from homology.zmodule import ZModule
-from homology.homomorphism import Homomorphism
-from homology.operators.direct_sum import direct_sum
+from module_theory.zmodule import ZModule
+from module_theory.homomorphism import Homomorphism
+from module_theory.operators.direct_sum import direct_sum
 
 
 class TestDirectSum(unittest.TestCase):

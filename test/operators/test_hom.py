@@ -1,10 +1,10 @@
 import unittest
-from homology.zmodule import ZModule
-from homology.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
-from homology.homomorphism import Homomorphism
-from homology.chain_complex import ChainComplex
-from homology.operators.direct_sum import direct_sum
-from homology.operators.hom import Hom, left_hom, right_hom
+from module_theory.zmodule import ZModule
+from module_theory.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
+from module_theory.homomorphism import Homomorphism
+from module_theory.chain_complex import ChainComplex
+from module_theory.operators.direct_sum import direct_sum
+from module_theory.operators.hom import Hom, left_hom, right_hom
 
 
 class TestHom(unittest.TestCase):

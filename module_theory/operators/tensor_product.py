@@ -1,10 +1,11 @@
 from collections.abc import Sequence
 import itertools
 import math
-from homology.zmodule import ZModule
-from homology.cyclic_zmodule import *
-from homology.operators.cyclic_summands import cyclic_summands
-from homology.operators.direct_sum import direct_sum
+from module_theory.zmodule import ZModule
+from module_theory.homomorphism import Homomorphism
+from module_theory.cyclic_zmodule import *
+from module_theory.operators.cyclic_summands import cyclic_summands
+from module_theory.operators.direct_sum import direct_sum
 
 
 TENSOR_PRODUCT_SEPARATOR_SYMBOL = " ⊗ "
@@ -75,6 +76,8 @@ class TensorProduct:
             for (embedding, summand_element)
             in zip(self._embeddings, summand_elements)
         )
+
+    def homomorphism(self, *components: Homomorphism)
 
     def dimensions(self) -> int:
         return self.module.dimensions()

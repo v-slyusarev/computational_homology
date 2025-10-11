@@ -1,5 +1,5 @@
 import unittest
-from homology.zmodule import ZModule
+from module_theory.zmodule import ZModule
 
 
 class TestZModule(unittest.TestCase):
