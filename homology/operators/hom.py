@@ -23,48 +23,38 @@ class Hom:
 
     def _calculate_hom_module(self):
         if self.domain.is_zero() or self.codomain.is_zero():
-            self._set_zero_module()
+            self.module = ZModule.zero()
+            self._embeddings = [Homomorphism.zero(self.domain, self.codomain)]
             return
 
-        # If domain and codomain are cyclic, then find Hom directly:
-        if isinstance(self.domain, FreeCyclicZModule):
-            if isinstance(self.codomain,
-                          (FreeCyclicZModule, TorsionCyclicZModule)):
-                # Hom(Z, B) is isomorphic to B
-                self._set_cyclic_module(self.codomain)
-                return
-        elif isinstance(self.domain, TorsionCyclicZModule):
-            if isinstance(self.codomain, FreeCyclicZModule):
-                # Hom(Z/pZ, Z) is trivial
-                self._set_zero_module()
-                return
-            elif isinstance(self.codomain, TorsionCyclicZModule):
-                # Hom(Z/pZ, Z/qZ) = Z / gcd(p, q)Z
-                torsion = gcd(self.domain.torsion, self.codomain.torsion)
-                if torsion >= 2:
-                    self._set_cyclic_module(TorsionCyclicZModule(torsion))
-                else:
-                    self._set_zero_module()
-                return
-
-        self._set_direct_sum_module([
-            Hom(domain_summand, codomain_summand).module
+        self.module, self._embeddings = direct_sum(*(
+            self._hom_of_cyclic_modules(domain_summand, codomain_summand)
             for codomain_summand in cyclic_summands(self.codomain)
             for domain_summand in cyclic_summands(self.domain)
-        ])
+        ))
 
-    def _set_zero_module(self):
-        self.module = ZModule.zero()
-        self._embeddings = [Homomorphism.zero(self.domain, self.codomain)]
-
-    def _set_cyclic_module(self, module):
-        self.module = module
-        self._embeddings = [
-                Homomorphism([[1]], self.domain, self.codomain)
-            ]
-
-    def _set_direct_sum_module(self, modules: Sequence[ZModule]):
-        self.module, self._embeddings = direct_sum(*modules)
+    @staticmethod
+    def _hom_of_cyclic_modules(domain: ZModule, codomain: ZModule) -> ZModule:
+        # If domain and codomain are cyclic, then find Hom directly:
+        match (domain, codomain):
+            case (TorsionCyclicZModule(), FreeCyclicZModule()):
+                # Hom(Z/pZ, Z) is trivial
+                return ZModule.zero()
+            case (TorsionCyclicZModule(p), TorsionCyclicZModule(q)):
+                # Hom(Z/pZ, Z/qZ) = Z / gcd(p, q)Z
+                torsion = gcd(domain.torsion, codomain.torsion)
+                if torsion >= 2:
+                    return TorsionCyclicZModule(torsion)
+                else:
+                    return ZModule.zero()
+            case (FreeCyclicZModule(), _):
+                # Hom(Z, B) is isomorphic to B
+                return codomain
+            case _:
+                raise ValueError(
+                    "domain and codomain must be FreeCyclicZModule or "
+                    "TorsionCyclicZModule"
+                )
 
     def element_from_homomorphism(
         self,
