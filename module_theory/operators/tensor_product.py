@@ -77,6 +77,34 @@ class TensorProduct(ZModule):
             in zip(self._embeddings, summand_elements)
         ) or self.zero_element()
 
+    def homomorphism(self, *components: Homomorphism) -> Homomorphism:
+        if not all(
+            component.domain.is_isomorphic_to(multiplier)
+            for (component, multiplier)
+            in zip(components, self.multipliers)
+        ):
+            raise ValueError("Mismatch in number of components")
+
+        component_codomains = [
+            component.codomain for component in components
+        ]
+
+        codomain = TensorProduct(*component_codomains)
+
+        canonical_generator_images: list[TensorProduct.Element] = [
+            codomain.pure_tensor(*(image_combination))
+            for image_combination, embedding in zip(
+                itertools.product(*(component.canonical_generator_images()
+                                    for component in components)),
+                self._embeddings
+            )
+            if not embedding.is_zero()
+        ]
+
+        return Homomorphism.from_canonical_generator_images(
+            canonical_generator_images, self
+        )
+
     def standard_form(self) -> str:
         return super().__repr__()
 

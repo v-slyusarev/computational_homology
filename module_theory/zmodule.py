@@ -35,6 +35,10 @@ class ZModule:
     def is_zero(self) -> bool:
         return self.rank == 0 and not self.torsion_numbers
 
+    def is_isomorphic_to(self, other: ZModule) -> bool:
+        return (self.rank == other.rank
+                and self.torsion_numbers == other.torsion_numbers)
+
     def element(self, coordinates: Sequence[int]) -> ZModule.Element:
         return ZModule.Element(self, coordinates)
 

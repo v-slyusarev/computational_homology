@@ -62,6 +62,23 @@ class TestHomomorphism(unittest.TestCase):
         right_composition = homomorphism.compose(identity)
         self.assertEqual(right_composition.matrix, matrix)
 
+    def test_homomorphism_from_canonical_generator_images(self):
+        module = ZModule.free(3)
+        homomorphism = Homomorphism.from_canonical_generator_images((
+            module.element([1, 2, 3]),
+            module.element([4, 5, 6]),
+            module.element([7, 8, 9])
+        ))
+        self.assertEqual(homomorphism.matrix, (
+            (1, 4, 7),
+            (2, 5, 8),
+            (3, 6, 9)
+        ))
+        self.assertEqual(homomorphism.domain.rank, 3)
+        self.assertEqual(homomorphism.domain.torsion_numbers, ())
+        self.assertEqual(homomorphism.codomain.rank, 3)
+        self.assertEqual(homomorphism.codomain.torsion_numbers, ())
+
 
 if __name__ == '__main__':
     unittest.main()

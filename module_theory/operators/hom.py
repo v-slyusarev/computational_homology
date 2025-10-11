@@ -163,25 +163,15 @@ def _calcuate_induced_homomorphisms(
             for homomorphism in generating_homomorphisms
         ]
 
-        # Now convert these matrices to the canonical coordinates of their
-        # respective elements in Hom(D, C_{i+1}):
-        images_of_generators_coordinates = [
-            next_hom.element_from_homomorphism(homomorphism).coordinates
+        # Now convert these matrices to their
+        # corresponding elements in Hom(D, C_{i+1}):
+        images_of_generators = [
+            next_hom.element_from_homomorphism(homomorphism)
             for homomorphism in images_of_generating_homomorphisms
         ]
 
-        # The columns of the matrix for d_i^* are the coordinates of the
-        # images of the canonical generators of C_i:
-        induced_homomorphism_matrix = [
-            list(coordinates_for_generator)
-            for coordinates_for_generator
-            in zip(*images_of_generators_coordinates)
-        ]
-
-        induced_homomorphism = Homomorphism(
-            matrix=induced_homomorphism_matrix,
-            domain=this_hom,
-            codomain=next_hom
+        induced_homomorphism = Homomorphism.from_canonical_generator_images(
+            images_of_generators, this_hom
         )
 
         induced_homomorphisms.append(induced_homomorphism)

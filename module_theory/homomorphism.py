@@ -68,6 +68,22 @@ class Homomorphism:
             codomain=module
         )
 
+    @staticmethod
+    def from_canonical_generator_images(
+        images: Sequence[ZModule.Element],
+        domain: ZModule | None = None
+    ):
+        codomain = images[0].module
+        if any(image.module.rank != codomain.rank or
+               image.module.torsion_numbers != codomain.torsion_numbers
+               for image in images):
+            raise ValueError("All images must belong to the same module")
+        return Homomorphism(([
+            tuple(combination_of_coordinates)
+            for combination_of_coordinates
+            in zip(*(image.coordinates for image in images))
+        ]), domain, codomain)
+
     def apply(
         self,
         element: ZModule.Element
@@ -80,6 +96,13 @@ class Homomorphism:
                     element.coordinates, row
                 ))
             for row in self.matrix])
+
+    def canonical_generator_images(self) -> tuple[ZModule.Element, ...]:
+        return tuple(
+            self.codomain.element(column)
+            for column in zip(*(self.matrix))
+        )
+
 
     def compose(self, other: Homomorphism) -> Homomorphism:
         if (

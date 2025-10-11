@@ -1,5 +1,6 @@
 import unittest
 from module_theory.zmodule import ZModule
+from module_theory.homomorphism import Homomorphism
 from module_theory.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
 from module_theory.operators.tensor_product import TensorProduct
 
@@ -129,10 +130,69 @@ class TestTensorProduct(unittest.TestCase):
             "6 + 8ℤ"
         )
 
-    def test_homomorphism(self):
-        A = ZModule(1, [6])
+    def test_homomorphism_easy(self):
+        A = ZModule(1, [7])
         B = ZModule(1, [8])
-        C = TensorProduct(A, B)
+        A_times_B = TensorProduct(A, B)
+        D = ZModule(1, [7 * 8])
+
+        f = Homomorphism([
+            [1, 0],
+            [0, 1]
+        ], A, D)
+
+        g = Homomorphism([
+            [-1, 0],
+            [0, -1]
+        ], B, D)
+
+        f_times_g = A_times_B.homomorphism(f, g)
+        self.assertEqual(f_times_g.matrix, (
+            (-1, 0, 0),
+            (0, 55, 0),
+            (0, 0, 55),
+            (0, 0, 0)
+        ))
+        self.assertEqual(f_times_g.domain.rank, A_times_B.rank)
+        self.assertEqual(
+            f_times_g.domain.torsion_numbers,
+            A_times_B.torsion_numbers
+        )
+        self.assertEqual(f_times_g.codomain.rank, 1)
+        self.assertEqual(
+            f_times_g.codomain.torsion_numbers,
+            (56, 56, 56)
+        )
+
+    def test_homomorphism_hard(self):
+        A = ZModule(1, [7])
+        B = ZModule(1, [8])
+        A_times_B = TensorProduct(A, B)
+        D = ZModule(1, [7 * 8])
+
+        f = Homomorphism([
+            [1, 2],
+            [3, 4]
+        ], A, D)
+
+        g = Homomorphism([
+            [5, 6],
+            [7, 8]
+        ], B, D)
+
+        f_times_g = A_times_B.homomorphism(f, g)
+        self.assertEqual(f_times_g.matrix, (
+            (5, 6, 10),
+            (7, 8, 14),
+            (15, 18, 20),
+            (21, 24, 28)
+        ))
+        self.assertTrue(f_times_g.domain.is_isomorphic_to(A_times_B))
+        self.assertEqual(f_times_g.codomain.rank, 1)
+        self.assertEqual(
+            f_times_g.codomain.torsion_numbers,
+            (56, 56, 56)
+        )
 
 
 if __name__ == '__main__':
