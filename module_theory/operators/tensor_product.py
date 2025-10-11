@@ -3,6 +3,7 @@ import itertools
 import math
 from module_theory.zmodule import ZModule
 from module_theory.homomorphism import Homomorphism
+from module_theory.chain_complex import ChainComplex
 from module_theory.cyclic_zmodule import *
 from module_theory.operators.cyclic_summands import cyclic_summands
 from module_theory.operators.direct_sum import direct_sum
@@ -113,3 +114,37 @@ class TensorProduct(ZModule):
             f"({module})" if module.dimensions() > 1 else str(module)
             for module in self.multipliers
         )
+
+
+def left_tensor_product(
+    chain_complex: ChainComplex,
+    multiplier: ZModule
+) -> ChainComplex:
+    tensor_products = [
+            TensorProduct(multiplier, module)
+            for module in chain_complex.modules
+        ]
+    tensor_homomorphisms = [
+        tensor_product.homomorphism(
+            Homomorphism.identity(multiplier), complex_homomorphism
+        ) for (tensor_product, complex_homomorphism)
+        in zip(tensor_products, chain_complex.homomorphisms)
+    ]
+    return ChainComplex(tensor_products, tensor_homomorphisms)
+
+
+def right_tensor_product(
+    chain_complex: ChainComplex,
+    multiplier: ZModule
+) -> ChainComplex:
+    tensor_products = [
+            TensorProduct(module, multiplier)
+            for module in chain_complex.modules
+        ]
+    tensor_homomorphisms = [
+        tensor_product.homomorphism(
+            complex_homomorphism, Homomorphism.identity(multiplier)
+        ) for (tensor_product, complex_homomorphism)
+        in zip(tensor_products, chain_complex.homomorphisms)
+    ]
+    return ChainComplex(tensor_products, tensor_homomorphisms)
