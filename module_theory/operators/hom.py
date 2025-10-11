@@ -1,37 +1,36 @@
 from __future__ import annotations
 from collections.abc import Sequence
 from typing import Callable
-# from itertools import zip_longest
 from math import gcd
 from module_theory.zmodule import ZModule
-from module_theory.cyclic_zmodule import FreeCyclicZModule, TorsionCyclicZModule
+from module_theory.cyclic_zmodule import (
+    FreeCyclicZModule, TorsionCyclicZModule
+)
 from module_theory.homomorphism import Homomorphism
 from module_theory.operators.direct_sum import direct_sum
 from module_theory.operators.cyclic_summands import cyclic_summands
 from module_theory.chain_complex import ChainComplex
 
 
-class Hom:
+class Hom(ZModule):
     def __init__(self, domain: ZModule, codomain: ZModule):
-        self.domain = domain
-        self.codomain = codomain
-        self._calculate_hom_module()
-        assert self.module is not None, "module is None!"
-        assert self._embeddings is not None, "_embeddings is None!"
-        self.rank = self.module.rank
-        self.torsion_numbers = self.module.torsion_numbers
-
-    def _calculate_hom_module(self):
+        self.domain: ZModule = domain
+        self.codomain: ZModule = codomain
         if self.domain.is_zero() or self.codomain.is_zero():
-            self.module = ZModule.zero()
-            self._embeddings = [Homomorphism.zero(self.domain, self.codomain)]
+            super().__init__(0, ())
+            self._embeddings: tuple[Homomorphism, ...] = (
+                Homomorphism.zero(self.domain, self.codomain),
+            )
             return
 
-        self.module, self._embeddings = direct_sum(*(
+        sum_of_cyclic, self._embeddings = direct_sum(*(
             self._hom_of_cyclic_modules(domain_summand, codomain_summand)
             for codomain_summand in cyclic_summands(self.codomain)
             for domain_summand in cyclic_summands(self.domain)
         ))
+
+        super().__init__(sum_of_cyclic.rank, sum_of_cyclic.torsion_numbers)
+        assert self._embeddings is not None, "_embeddings is None!"
 
     @staticmethod
     def _hom_of_cyclic_modules(domain: ZModule, codomain: ZModule) -> ZModule:
@@ -52,7 +51,7 @@ class Hom:
                 return codomain
             case _:
                 raise ValueError(
-                    "domain and codomain must be FreeCyclicZModule or "
+                    "domain and codomain must be FreeCyclicZModule or " +
                     "TorsionCyclicZModule"
                 )
 
@@ -68,13 +67,16 @@ class Hom:
             embedding.apply(embedding.domain.element([value]))
             for (value, embedding)
             in zip(flattened_matrix, self._embeddings)
-        )
+        ) or self.zero_element()
 
     def homomorphism_from_element(
         self,
         element: ZModule.Element
     ) -> Homomorphism:
-        matrix = Homomorphism.zero(self.domain, self.codomain).matrix
+        matrix = list(
+            list(row) for row
+            in Homomorphism.zero(self.domain, self.codomain).matrix
+        )
 
         # List matrix indices that correspond to nontrivial summands
         coordinates_to_matrix_indices = [
@@ -95,23 +97,8 @@ class Hom:
             matrix, self.domain, self.codomain
         )
 
-    def dimensions(self):
-        return self.module.dimensions()
-
-    def is_zero(self) -> bool:
-        return self.module.is_zero()
-
-    def element(self, coordinates: Sequence[int]) -> ZModule.Element:
-        return self.module.element(coordinates)
-
-    def zero_element(self) -> ZModule.Element:
-        return self.module.zero_element()
-
-    def canonical_generators(self) -> list[ZModule.Element]:
-        return self.module.canonical_generators()
-
     def standard_form(self) -> str:
-        return str(self.module)
+        return super().__repr__()
 
     def __repr__(self) -> str:
         return f"Hom({self.domain}, {self.codomain})"
@@ -158,8 +145,8 @@ def _calcuate_induced_homomorphisms(
     hom_modules: Sequence[Hom],
     original_homomorphisms: Sequence[Homomorphism],
     homomorphism_mapping: Callable[[Homomorphism, Homomorphism], Homomorphism]
-) -> Sequence[Homomorphism]:
-    induced_homomorphisms = []
+) -> tuple[Homomorphism, ...]:
+    induced_homomorphisms: list[Homomorphism] = []
 
     for (this_hom, next_hom, complex_homomorphism) in zip(
         hom_modules, hom_modules[1:], original_homomorphisms
@@ -199,4 +186,4 @@ def _calcuate_induced_homomorphisms(
 
         induced_homomorphisms.append(induced_homomorphism)
 
-    return induced_homomorphisms
+    return tuple(induced_homomorphisms)

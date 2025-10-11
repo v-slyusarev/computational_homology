@@ -15,9 +15,6 @@ class ChainComplex:
         if not modules:
             raise ValueError("modules must be non-empty")
 
-        if homomorphisms is None:
-            homomorphisms = ()
-
         if len(homomorphisms) == len(modules) - 1:
             homomorphisms = [*homomorphisms, Homomorphism.zero(
                 modules[-1], ZModule.zero()
@@ -26,24 +23,24 @@ class ChainComplex:
         if len(modules) != len(homomorphisms):
             raise ValueError("modules and homomorphisms length mismatch")
 
-        self.modules = modules
-        self.homomorphisms = homomorphisms
+        self.modules: tuple[ZModule, ...] = tuple(modules)
+        self.homomorphisms: tuple[Homomorphism, ...] = tuple(homomorphisms)
 
     def left_pad(self, count: int = 1) -> ChainComplex:
         zero = ZModule.zero()
         return ChainComplex(
-            modules=[zero] * count + self.modules,
-            homomorphisms=[Homomorphism.zero(zero, zero)] * (count - 1) +
-            [Homomorphism.zero(zero, self.modules[0])] + self.homomorphisms
+            modules=(zero,) * count + self.modules,
+            homomorphisms=(Homomorphism.zero(zero, zero),) * (count - 1) +
+            (Homomorphism.zero(zero, self.modules[0]),) + self.homomorphisms
         )
 
     def right_pad(self, count: int = 1) -> ChainComplex:
         zero = ZModule.zero()
         return ChainComplex(
-            modules=self.modules + [zero] * count,
+            modules=self.modules + (zero,) * count,
             homomorphisms=self.homomorphisms
-            + [Homomorphism.zero(self.modules[-1], zero)]
-            + [Homomorphism.zero(zero, zero)] * (count - 1)
+            + (Homomorphism.zero(self.modules[-1], zero),)
+            + (Homomorphism.zero(zero, zero),) * (count - 1)
         )
 
     @staticmethod

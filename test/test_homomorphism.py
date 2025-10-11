@@ -14,6 +14,23 @@ class TestHomomorphism(unittest.TestCase):
              (0, 0),
              (0, 0))
         )
+        self.assertEqual(zero.domain.rank, 2)
+        self.assertEqual(zero.domain.torsion_numbers, ())
+        self.assertEqual(zero.codomain.rank, 3)
+        self.assertEqual(zero.codomain.torsion_numbers, ())
+
+    def test_normalize(self):
+        A = ZModule(2, [2, 4, 8])
+        B = ZModule(1, [2, 4])
+        matrix = [[1, 2, 3, 4, 5],
+                  [6, 7, 8, 9, 10],
+                  [-1, -2, -3, -4, -5]]
+        homomorphism = Homomorphism(matrix, A, B)
+        self.assertEqual(homomorphism.matrix, ((1, 2, 3, 4, 5),
+                                               (0, 1, 0, 1, 0),
+                                               (3, 2, 1, 0, 3)))
+        self.assertEqual(homomorphism.domain, A)
+        self.assertEqual(homomorphism.codomain, B)
 
     def test_apply_zero(self):
         module = ZModule(5, [2, 2, 4, 8, 8])
@@ -32,7 +49,7 @@ class TestHomomorphism(unittest.TestCase):
                             for coordinate in image.coordinates))
 
     def test_compose_with_identity(self):
-        module = ZModule(2, [2])
+        module = ZModule(2, [10])
         identity = Homomorphism.identity(module)
         matrix = (
             (1, 2, 3),

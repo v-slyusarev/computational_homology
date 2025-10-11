@@ -1,5 +1,6 @@
 from __future__ import annotations
 from collections.abc import Sequence
+
 from module_theory.zmodule import ZModule
 
 
@@ -43,7 +44,7 @@ class Homomorphism:
             tuple(item % torsion for item in row)
             for (row, torsion)
             in zip(matrix[self.codomain.rank:], self.codomain.torsion_numbers)
-        )
+        ) or ((0,),)
 
     @staticmethod
     def zero(domain: ZModule,

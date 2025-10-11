@@ -18,16 +18,16 @@ class ZModule:
         if any(value < 2 for value in torsion_numbers):
             raise ValueError("every Betti number must be at least 2")
 
-        self.rank = rank
-        self.torsion_numbers = torsion_numbers
+        self.rank: int = rank
+        self.torsion_numbers: tuple[int, ...] = tuple(torsion_numbers)
 
     @staticmethod
     def zero() -> ZModule:
-        return ZModule(0, [])
+        return ZModule(0, ())
 
-    @classmethod
-    def free(cls, rank: int) -> ZModule:
-        return cls(rank, [])
+    @staticmethod
+    def free(rank: int) -> ZModule:
+        return ZModule(rank, ())
 
     def dimensions(self) -> int:
         return max(self.rank + len(self.torsion_numbers), 1)
@@ -41,13 +41,16 @@ class ZModule:
     def zero_element(self) -> ZModule.Element:
         return self.element([0 for _ in range(self.dimensions())])
 
-    def canonical_generators(self) -> list[ZModule.Element]:
+    def canonical_generators(self) -> tuple[ZModule.Element, ...]:
         if self.is_zero():
-            return [self.zero_element()]
+            return (self.zero_element(),)
 
-        return [self.element([1 if coordinate == generator_index else 0
-                              for coordinate in range(self.dimensions())])
-                for generator_index in range(self.dimensions())]
+        return tuple(
+            self.element([
+                1 if coordinate == generator_index else 0
+                for coordinate in range(self.dimensions())
+            ]) for generator_index in range(self.dimensions())
+        )
 
     def __repr__(self) -> str:
         free_part = None
@@ -88,22 +91,21 @@ class ZModule:
 
     class Element:
         def __init__(self, module: ZModule, coordinates: Sequence[int]):
-            if module is None or coordinates is None:
-                raise ValueError("arguments must not be None")
-
             if len(coordinates) != module.dimensions():
-                raise ValueError("length of coordinates must be equal to the "
-                                 "number of dimensions in module")
+                raise ValueError("length of coordinates must be equal to " +
+                                 "the number of dimensions in module")
 
-            self.module = module
+            self.module: ZModule = module
             if self.module.is_zero():
-                self.coordinates = [0]
+                self.coordinates: tuple[int, ...] = (0,)
             else:
-                self.coordinates = coordinates[:module.rank] + [
+                self.coordinates = tuple(
+                    coordinates[:module.rank]
+                ) + tuple(
                     coordinate % torsion for (coordinate, torsion) in zip(
                         coordinates[module.rank:], module.torsion_numbers
                     )
-                ]
+                )
 
         def __add__(self, other: ZModule.Element) -> ZModule.Element:
             if (
@@ -118,11 +120,11 @@ class ZModule:
                 in zip(self.coordinates, other.coordinates)
             ])
 
-        def __radd__(self, other: ZModule.Element) -> ZModule.Element:
-            if other is not ZModule.Element:
+        def __radd__(self, other: object) -> ZModule.Element:
+            if isinstance(other, ZModule.Element):
+                return self + other
+            else:
                 return self
-
-            return self + other
 
         def __repr__(self) -> str:
             if self.module.is_zero():

@@ -17,6 +17,7 @@
   "reportMissingImports": "error",
   "reportMissingTypeStubs": false,
   "reportImplicitOverride": false,
+  "reportUnusedCallResult": false,
 
   "pythonVersion": "3.12",
   "pythonPlatform": "Linux",

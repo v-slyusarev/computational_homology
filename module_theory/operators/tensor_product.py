@@ -11,16 +11,14 @@ from module_theory.operators.direct_sum import direct_sum
 TENSOR_PRODUCT_SEPARATOR_SYMBOL = " ⊗ "
 
 
-class TensorProduct:
+class TensorProduct(ZModule):
     def __init__(self, *multipliers: ZModule):
         if len(multipliers) < 2:
             raise ValueError("At least 2 tensor multipliers must be provided")
-        self.multipliers = multipliers
-        self._calculate_tensor_product()
-        assert self.module is not None, "module is None!"
-        assert self._embeddings is not None, "_embeddings is None!"
-        self.rank = self.module.rank
-        self.torsion_numbers = self.module.torsion_numbers
+        self.multipliers: tuple[ZModule, ...] = multipliers
+        module, embeddings = self._calculate_tensor_product()
+        super().__init__(module.rank, module.torsion_numbers)
+        self._embeddings: tuple[Homomorphism, ...] = embeddings
 
     def _calculate_tensor_product(self):
         cyclic_summand_representations = [
@@ -36,10 +34,12 @@ class TensorProduct:
             for combination in cyclic_mutiplier_combinations
         ]
 
-        self.module, self._embeddings = direct_sum(*direct_summands)
+        return direct_sum(*direct_summands)
 
     @staticmethod
-    def _tensor_product_of_cyclic_modules(modules: ZModule) -> ZModule:
+    def _tensor_product_of_cyclic_modules(
+        modules: Sequence[ZModule]
+    ) -> ZModule:
         if any(module.is_zero() for module in modules):
             return ZModule.zero()
 
@@ -75,28 +75,10 @@ class TensorProduct:
             embedding.apply(summand_element)
             for (embedding, summand_element)
             in zip(self._embeddings, summand_elements)
-        )
-
-    def homomorphism(self, *components: Homomorphism):
-        pass
-
-    def dimensions(self) -> int:
-        return self.module.dimensions()
-
-    def is_zero(self) -> bool:
-        return self.module.is_zero()
-
-    def element(self, coordinates: Sequence[int]) -> ZModule.Element:
-        return self.module.element(coordinates)
-
-    def zero_element(self) -> ZModule.Element:
-        return self.module.zero_element()
-
-    def canonical_generators(self) -> list[ZModule.Element]:
-        return self.module.canonical_generators()
+        ) or self.zero_element()
 
     def standard_form(self) -> str:
-        return str(self.module)
+        return super().__repr__()
 
     def __repr__(self) -> str:
         return TENSOR_PRODUCT_SEPARATOR_SYMBOL.join(

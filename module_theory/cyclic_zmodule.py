@@ -8,8 +8,8 @@ class FreeCyclicZModule(ZModule):
 
 
 class TorsionCyclicZModule(ZModule):
-    __match_args__ = ("torsion",)
+    __match_args__: tuple[str, ...] = ("torsion",)
 
     def __init__(self, torsion: int):
         super().__init__(0, [torsion])
-        self.torsion = torsion
+        self.torsion: int = torsion
