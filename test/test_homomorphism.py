@@ -10,9 +10,9 @@ class TestHomomorphism(unittest.TestCase):
         zero = Homomorphism.zero(A, B)
         self.assertEqual(
             zero.matrix,
-            [[0, 0],
-             [0, 0],
-             [0, 0]]
+            ((0, 0),
+             (0, 0),
+             (0, 0))
         )
 
     def test_apply_zero(self):
@@ -34,11 +34,11 @@ class TestHomomorphism(unittest.TestCase):
     def test_compose_with_identity(self):
         module = ZModule(2, [2])
         identity = Homomorphism.identity(module)
-        matrix = [
-            [1, 2, 3],
-            [4, 5, 6],
-            [7, 8, 9]
-        ]
+        matrix = (
+            (1, 2, 3),
+            (4, 5, 6),
+            (7, 8, 9)
+        )
         homomorphism = Homomorphism(matrix, domain=module, codomain=module)
         left_composition = identity.compose(homomorphism)
         self.assertEqual(left_composition.matrix, matrix)

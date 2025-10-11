@@ -1,0 +1,33 @@
+{
+  "include": [
+    "src"
+  ],
+
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+  ],
+
+  "defineConstant": {
+    "DEBUG": true
+  },
+
+  "stubPath": "src/stubs",
+
+  "reportMissingImports": "error",
+  "reportMissingTypeStubs": false,
+  "reportImplicitOverride": false,
+
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Linux",
+
+  "executionEnvironments": [
+    {
+      "root": "src/test",
+      "reportPrivateUsage": false,
+    },
+    {
+      "root": "src"
+    }
+  ]
+}

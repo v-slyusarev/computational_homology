@@ -77,7 +77,8 @@ class TensorProduct:
             in zip(self._embeddings, summand_elements)
         )
 
-    def homomorphism(self, *components: Homomorphism)
+    def homomorphism(self, *components: Homomorphism):
+        pass
 
     def dimensions(self) -> int:
         return self.module.dimensions()

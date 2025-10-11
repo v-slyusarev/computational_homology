@@ -6,15 +6,13 @@ from module_theory.zmodule import ZModule
 class Homomorphism:
     def __init__(self,
                  matrix: Sequence[Sequence[int]],
-                 domain: ZModule = None,
-                 codomain: ZModule = None):
+                 domain: ZModule | None = None,
+                 codomain: ZModule | None = None):
 
         if not matrix or not matrix[0]:
             raise ValueError(
                 "matrix must be a 2d list with at least one entry"
             )
-
-        self.matrix = matrix
 
         domain_dimensions = len(matrix[0])
 
@@ -23,33 +21,37 @@ class Homomorphism:
                 "All rows of matrix must have equal length"
             )
 
-        if domain is None:
-            self.domain = ZModule.free(domain_dimensions)
-        elif domain_dimensions != domain.dimensions():
+        if domain and domain_dimensions != domain.dimensions():
             raise ValueError(
                 "domain dimension mismatch"
             )
-        else:
-            self.domain = domain
 
         codomain_dimensions = len(matrix)
 
-        if codomain is None:
-            self.codomain = ZModule.free(codomain_dimensions)
-        elif codomain_dimensions != codomain.dimensions():
+        if codomain and codomain_dimensions != codomain.dimensions():
             raise ValueError(
-                f"codomain dimension mismatch: "
-                f"expected {codomain.dimensions()}, "
+                f"codomain dimension mismatch: " +
+                f"expected {codomain.dimensions()}, " +
                 f"found {codomain_dimensions}"
             )
-        else:
-            self.codomain = codomain
+
+        self.domain: ZModule = domain or ZModule.free(domain_dimensions)
+        self.codomain: ZModule = codomain or ZModule.free(codomain_dimensions)
+        self.matrix: tuple[tuple[int, ...], ...] = tuple(
+            tuple(row) for row in matrix[:self.codomain.rank]
+        ) + tuple(
+            tuple(item % torsion for item in row)
+            for (row, torsion)
+            in zip(matrix[self.codomain.rank:], self.codomain.torsion_numbers)
+        )
 
     @staticmethod
     def zero(domain: ZModule,
              codomain: ZModule) -> Homomorphism:
-        return Homomorphism([[0 for _ in range(domain.dimensions())]
-                             for _ in range(codomain.dimensions())])
+        return Homomorphism(tuple(
+            tuple(0 for _ in range(domain.dimensions()))
+            for _ in range(codomain.dimensions())
+        ))
 
     def is_zero(self) -> bool:
         return all(value == 0 for row in self.matrix for value in row)
@@ -57,9 +59,10 @@ class Homomorphism:
     @staticmethod
     def identity(module: ZModule) -> Homomorphism:
         return Homomorphism(
-            matrix=[[1 if row == column else 0
-                    for column in range(module.dimensions())]
-                    for row in range(module.dimensions())],
+            matrix=tuple(tuple(
+                1 if row == column else 0
+                for column in range(module.dimensions())
+            ) for row in range(module.dimensions())),
             domain=module,
             codomain=module
         )
@@ -85,11 +88,11 @@ class Homomorphism:
             raise ValueError("domain and codomain mismatch")
 
         return Homomorphism(
-            matrix=[[
+            matrix=tuple(tuple(
                 sum(self.matrix[row_index][k] * other.matrix[k][column_index]
                     for k in range(self.domain.dimensions()))
                 for column_index in range(other.domain.dimensions())
-            ] for row_index in range(self.codomain.dimensions())],
+            ) for row_index in range(self.codomain.dimensions())),
             domain=other.domain,
             codomain=self.codomain
         )
