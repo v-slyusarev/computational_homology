@@ -35,7 +35,7 @@ class ZModule:
     def is_zero(self) -> bool:
         return self.rank == 0 and not self.torsion_numbers
 
-    def is_isomorphic_to(self, other: ZModule) -> bool:
+    def is_identical_to(self, other: ZModule) -> bool:
         return (self.rank == other.rank
                 and self.torsion_numbers == other.torsion_numbers)
 
@@ -45,16 +45,16 @@ class ZModule:
     def zero_element(self) -> ZModule.Element:
         return self.element([0 for _ in range(self.dimensions())])
 
-    def canonical_generators(self) -> tuple[ZModule.Element, ...]:
+    def canonical_generators(self) -> list[ZModule.Element]:
         if self.is_zero():
-            return (self.zero_element(),)
+            return [self.zero_element()]
 
-        return tuple(
+        return [
             self.element([
                 1 if coordinate == generator_index else 0
                 for coordinate in range(self.dimensions())
             ]) for generator_index in range(self.dimensions())
-        )
+        ]
 
     def __repr__(self) -> str:
         free_part = None

@@ -187,7 +187,7 @@ class TestTensorProduct(unittest.TestCase):
             (15, 18, 20),
             (21, 24, 28)
         ))
-        self.assertTrue(f_times_g.domain.is_isomorphic_to(A_times_B))
+        self.assertTrue(f_times_g.domain.is_identical_to(A_times_B))
         self.assertEqual(f_times_g.codomain.rank, 1)
         self.assertEqual(
             f_times_g.codomain.torsion_numbers,

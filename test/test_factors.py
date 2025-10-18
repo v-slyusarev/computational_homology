@@ -1,5 +1,5 @@
 import unittest
-from _internal.invariant_factors import *
+from module_theory._internal.invariant_factors import *
 
 
 class TestFactors(unittest.TestCase):

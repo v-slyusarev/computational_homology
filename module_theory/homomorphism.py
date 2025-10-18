@@ -97,12 +97,11 @@ class Homomorphism:
                 ))
             for row in self.matrix])
 
-    def canonical_generator_images(self) -> tuple[ZModule.Element, ...]:
-        return tuple(
+    def canonical_generator_images(self) -> list[ZModule.Element]:
+        return [
             self.codomain.element(column)
             for column in zip(*(self.matrix))
-        )
-
+        ]
 
     def compose(self, other: Homomorphism) -> Homomorphism:
         if (

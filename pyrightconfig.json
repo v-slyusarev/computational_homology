@@ -1,34 +1,43 @@
 {
   "include": [
-    "src"
-  ],
+      "module_theory",
+      "test",
+    ],
 
-  "exclude": [
-    "**/node_modules",
-    "**/__pycache__",
-  ],
+    "exclude": [
+      "**/__pycache__",
+      "htmlcov",
+      "examples"
+    ],
 
-  "defineConstant": {
-    "DEBUG": true
-  },
+    "reportMissingImports": "error",
+    "reportMissingModuleSource": "warning",
+    "reportMissingTypeStubs": false,
+    "reportImplicitOverride": false,
+    "reportUnusedCallResult": false,
 
-  "stubPath": "src/stubs",
-
-  "reportMissingImports": "error",
-  "reportMissingTypeStubs": false,
-  "reportImplicitOverride": false,
-  "reportUnusedCallResult": false,
-
-  "pythonVersion": "3.12",
-  "pythonPlatform": "Linux",
-
-  "executionEnvironments": [
-    {
-      "root": "src/test",
-      "reportPrivateUsage": false,
+    "pythonVersion": "3.12",
+    "pythonPlatform": "Linux",
+    "typeCheckingMode": "strict",
+    "defineConstant": {
+      "DEBUG": true
     },
-    {
-      "root": "src"
-    }
-  ]
+
+
+    "executionEnvironments": [
+      {
+        "root": "module_theory",
+        "extraPaths": [
+          "."
+        ],
+      },
+      {
+        "root": "test",
+        "extraPaths": [
+          ".",
+          "module_theory"
+        ],
+        "reportPrivateUsage": false
+      },
+    ],
 }

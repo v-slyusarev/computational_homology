@@ -80,7 +80,7 @@ class TensorProduct(ZModule):
 
     def homomorphism(self, *components: Homomorphism) -> Homomorphism:
         if not all(
-            component.domain.is_isomorphic_to(multiplier)
+            component.domain.is_identical_to(multiplier)
             for (component, multiplier)
             in zip(components, self.multipliers)
         ):
