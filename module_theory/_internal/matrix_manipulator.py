@@ -54,7 +54,9 @@ class MatrixManipulator:
 
     def exchange_columns(self, first_index: int, second_index: int):
         self.matrix.exchange_columns(first_index, second_index)
-        self.inverse_column_change_matrix.exchange_columns(first_index, second_index)
+        self.inverse_column_change_matrix.exchange_rows(
+            first_index, second_index
+        )
         self.column_change_matrix.exchange_columns(first_index, second_index)
 
     def multiply_row_by_negative_one(self, row_index: int):
@@ -70,9 +72,55 @@ class MatrixManipulator:
 
         self.matrix.add_multiple_of_row(add_to_index, add_index, multiplier)
         self.inverse_row_change_matrix.add_multiple_of_row(add_to_index,
-                                                       add_index, multiplier)
+                                                           add_index,
+                                                           multiplier)
         self.row_change_matrix.add_multiple_of_column(add_index,
-                                                  add_to_index, -multiplier)
+                                                      add_to_index,
+                                                      -multiplier)
+
+    def add_multiple_of_column(
+        self, add_to_index: int, add_index: int, multiplier: int = 1
+    ):
+        if add_to_index == add_index and multiplier == -1:
+            self._row_rank = None
+
+        self.matrix.add_multiple_of_column(add_to_index, add_index, multiplier)
+        self.inverse_column_change_matrix.add_multiple_of_row(add_index,
+                                                              add_to_index,
+                                                              -multiplier)
+        self.column_change_matrix.add_multiple_of_column(add_to_index,
+                                                         add_index,
+                                                         multiplier)
+
+    def reduce_rows_by_pivot(
+        self, pivot_row_index: int, pivot_column_index: int
+    ):
+        pivot_value: int = (
+            self._array()[pivot_row_index][pivot_column_index]
+        )
+
+        for row_index in range(pivot_row_index + 1, self.row_count()):
+            multiplier: int = (
+                self._array()[row_index][pivot_column_index] // pivot_value
+            )
+            self.add_multiple_of_row(
+                row_index, pivot_row_index, -multiplier
+            )
+
+    def reduce_columns_by_pivot(
+        self, pivot_row_index: int, pivot_column_index: int
+    ):
+        pivot_value: int = (
+            self._array()[pivot_row_index][pivot_column_index]
+        )
+
+        for column_index in range(pivot_column_index + 1, self.column_count()):
+            multiplier: int = (
+                self._array()[pivot_row_index][column_index] // pivot_value
+            )
+            self.add_multiple_of_column(
+                column_index, pivot_column_index, -multiplier
+            )
 
     @staticmethod
     def _trivial_change_matrix(row_count: int) -> Matrix:

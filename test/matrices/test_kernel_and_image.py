@@ -21,3 +21,7 @@ class TestKernelAndImage(unittest.TestCase):
             [2, 0, 4, 3],
             [0, 1, 3, 5]
         ])
+
+
+if __name__ == '__main__':
+    unittest.main()

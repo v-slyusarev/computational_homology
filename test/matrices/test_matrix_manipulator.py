@@ -72,6 +72,65 @@ class TestMatrixManipulator(unittest.TestCase):
             [0, 0, 1]
         ])
 
+    def test_reduce_rows_by_pivot(self):
+        array = [
+            [2, 3, 1, -1],
+            [3, 2, 1, 4],
+            [4, 4, -2, -2],
+        ]
+
+        matrix = Matrix(array)
+        matrix_manipulator = MatrixManipulator(matrix)
+
+        matrix_manipulator.reduce_rows_by_pivot(0, 0)
+        self.assertEqual(matrix_manipulator._array(), [
+            [2, 3, 1, -1],
+            [1, -1, 0, 5],
+            [0, -2, -4, 0]
+        ])
+        self.assertEqual(matrix_manipulator.inverse_row_change_matrix.array, [
+            [1, 0, 0],
+            [-1, 1, 0],
+            [-2, 0, 1]
+        ])
+        self.assertEqual(matrix_manipulator.row_change_matrix.array, [
+            [1, 0, 0],
+            [1, 1, 0],
+            [2, 0, 1]
+        ])
+
+    def test_reduce_columns_by_pivot(self):
+        array = [
+            [2, 3, 4],
+            [3, 2, 4],
+            [1, 1, -2],
+            [-1, 4, -2]
+        ]
+
+        matrix = Matrix(array)
+        matrix_manipulator = MatrixManipulator(matrix)
+
+        matrix_manipulator.reduce_columns_by_pivot(0, 0)
+        self.assertEqual(matrix_manipulator._array(), [
+            [2, 1, 0],
+            [3, -1, -2],
+            [1, 0, -4],
+            [-1, 5, 0]
+        ])
+        self.assertEqual(
+            matrix_manipulator.inverse_column_change_matrix.array,
+            [
+                [1, 1, 2],
+                [0, 1, 0],
+                [0, 0, 1]
+            ]
+        )
+        self.assertEqual(matrix_manipulator.column_change_matrix.array, [
+            [1, -1, -2],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
 
 if __name__ == '__main__':
     unittest.main()

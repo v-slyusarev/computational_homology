@@ -7,33 +7,6 @@ from module_theory.zmodule import ZModule
 
 class TestRowEchelon(unittest.TestCase):
 
-    # def test_row_reduce_step(self):
-    #     array = [
-    #         [2, 3, 1, -1],
-    #         [3, 2, 1, 4],
-    #         [4, 4, -2, -2],
-    #     ]
-
-    #     matrix = Matrix(array)
-    #     row_echelon_calculator = RowEchelonCalculator(matrix)
-
-    #     row_echelon_calculator._row_reduce_step(0, 0)
-    #     self.assertEqual(row_echelon_calculator._array(), [
-    #         [2, 3, 1, -1],
-    #         [1, -1, 0, 5],
-    #         [0, -2, -4, 0]
-    #     ])
-    #     self.assertEqual(row_echelon_calculator.inverse_change_matrix().array, [
-    #         [1, 0, 0],
-    #         [-1, 1, 0],
-    #         [-2, 0, 1]
-    #     ])
-    #     self.assertEqual(row_echelon_calculator.change_matrix().array, [
-    #         [1, 0, 0],
-    #         [1, 1, 0],
-    #         [2, 0, 1]
-    #     ])
-
     # def test_prepare_row_reduce_step(self):
     #     array = [
     #         [3, 2, 1, 4],
@@ -98,14 +71,6 @@ class TestRowEchelon(unittest.TestCase):
         matrix = Matrix(array)
         row_echelon_calculator = RowEchelonCalculator(matrix)
 
-        row_echelon_calculator.row_echelon()
-        print("matrix")
-        print('\n'.join([str(row) for row in row_echelon_calculator.row_echelon().array]))
-        print("change_matrix")
-        print('\n'.join([str(row) for row in row_echelon_calculator.change_matrix().array]))
-        print("inverse_change_matrix")
-        print('\n'.join([str(row) for row in row_echelon_calculator.inverse_change_matrix().array]))
-
         self.assertEqual(row_echelon_calculator.row_echelon().array, [
             [1, -1, 0, 5],
             [0, -1, -11, -11],
@@ -126,16 +91,9 @@ class TestRowEchelon(unittest.TestCase):
 
         self.assertEqual(row_echelon_calculator.row_rank(), 3)
         homomorphism = Homomorphism(array)
-        print("homomorphism", homomorphism)
         change_homomorphism = Homomorphism(row_echelon_calculator.change_matrix().array)
-        print("change_homomorphism", change_homomorphism)
         inverse_change_homomorphism = Homomorphism(row_echelon_calculator.inverse_change_matrix().array)
-        print("inverse_change_homomorphism", inverse_change_homomorphism)
         result_homomorphism = Homomorphism(row_echelon_calculator._array())
-
-        print(inverse_change_homomorphism.compose(change_homomorphism))
-        print(change_homomorphism.compose(inverse_change_homomorphism))
-        print(inverse_change_homomorphism.compose(homomorphism))
 
         self.assertEqual(
             inverse_change_homomorphism.compose(change_homomorphism).matrix,
