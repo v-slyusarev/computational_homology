@@ -2,6 +2,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from module_theory.zmodule import ZModule
+from module_theory._internal.smith_normal_form import (
+    SmithNormalForm, SmithNormalFormCalculator
+)
+from module_theory._internal.kernel_and_image import KernelAndImageCalculator
 
 
 class Homomorphism:
@@ -44,7 +48,11 @@ class Homomorphism:
             tuple(item % torsion for item in row)
             for (row, torsion)
             in zip(matrix[self.codomain.rank:], self.codomain.torsion_numbers)
-        ) or ((0,),)
+        ) or (tuple(0 for _ in range(self.domain.dimensions())),)
+        self._smith_normal_form: SmithNormalForm | None = None
+        self._kernel_generators: tuple[ZModule.Element, ...] | None = None
+        if self.domain.is_zero():
+            self._kernel_generators = (self.domain.zero_element(),)
 
     @staticmethod
     def zero(domain: ZModule,
@@ -52,7 +60,7 @@ class Homomorphism:
         return Homomorphism(tuple(
             tuple(0 for _ in range(domain.dimensions()))
             for _ in range(codomain.dimensions())
-        ))
+        ), domain, codomain)
 
     def is_zero(self) -> bool:
         return all(value == 0 for row in self.matrix for value in row)
@@ -74,9 +82,7 @@ class Homomorphism:
         domain: ZModule | None = None
     ):
         codomain = images[0].module
-        if any(image.module.rank != codomain.rank or
-               image.module.torsion_numbers != codomain.torsion_numbers
-               for image in images):
+        if not all(image.module.is_identical_to(codomain) for image in images):
             raise ValueError("All images must belong to the same module")
         return Homomorphism(([
             tuple(combination_of_coordinates)
@@ -119,6 +125,61 @@ class Homomorphism:
             domain=other.domain,
             codomain=self.codomain
         )
+
+    def _get_smith_normal_form(self) -> SmithNormalForm:
+        if not self._smith_normal_form:
+            self._smith_normal_form = (
+                SmithNormalFormCalculator(self.matrix).smith_normal_form()
+            )
+        return self._smith_normal_form
+
+    def preimage(self, element: ZModule.Element) -> ZModule.Element | None:
+        if not element.module.is_identical_to(self.codomain):
+            raise ValueError(
+                "The element must belong to the codomain of the homomorphism"
+            )
+        # smith_matrix = self._get_smith_normal_form().matrix
+        rank = self._get_smith_normal_form().rank
+        diagonal_numbers = self._get_smith_normal_form().diagonal[:rank]
+        codomain_change_matrix = (self._get_smith_normal_form()
+                                      .inverse_row_change_matrix)
+        codomain_change_homomorphism = Homomorphism(
+            codomain_change_matrix, domain=element.module
+        )
+        target = codomain_change_homomorphism.apply(element)
+
+        if any(target.coordinates[rank:]):
+            return None
+        if any(
+            coordinate % diagonal_number
+            for (coordinate, diagonal_number)
+            in zip(target.coordinates, diagonal_numbers)
+        ):
+            return None
+
+        preimage_changed = self.domain.element([
+                coordinate // diagonal_number
+                for (coordinate, diagonal_number)
+                in zip(target.coordinates, diagonal_numbers)
+            ] + [0] * (self.domain.dimensions() - rank)
+        )
+
+        domain_change_homomorphism = Homomorphism(
+            self._get_smith_normal_form().column_change_matrix,
+            domain=self.domain,
+            codomain=self.domain
+        )
+
+        return domain_change_homomorphism.apply(preimage_changed)
+
+    def kernel_generators(self) -> list[ZModule.Element]:
+        if not self._kernel_generators:
+            kernel = KernelAndImageCalculator(self.matrix).kernel
+            self._kernel_generators = tuple(
+                self.domain.element(coordinates_list)
+                for coordinates_list in kernel
+            )
+        return list(self._kernel_generators)
 
     def __repr__(self) -> str:
         return (

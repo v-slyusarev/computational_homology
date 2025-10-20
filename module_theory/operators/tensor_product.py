@@ -3,7 +3,7 @@ import itertools
 import math
 from module_theory.zmodule import ZModule
 from module_theory.homomorphism import Homomorphism
-from module_theory.chain_complex import ChainComplex
+from module_theory.cochain_complex import CochainComplex
 from module_theory.cyclic_zmodule import *
 from module_theory.operators.cyclic_summands import cyclic_summands
 from module_theory.operators.direct_sum import direct_sum
@@ -117,34 +117,34 @@ class TensorProduct(ZModule):
 
 
 def left_tensor_product(
-    chain_complex: ChainComplex,
+    cochain_complex: CochainComplex,
     multiplier: ZModule
-) -> ChainComplex:
+) -> CochainComplex:
     tensor_products = [
             TensorProduct(multiplier, module)
-            for module in chain_complex.modules
+            for module in cochain_complex.modules
         ]
     tensor_homomorphisms = [
         tensor_product.homomorphism(
             Homomorphism.identity(multiplier), complex_homomorphism
         ) for (tensor_product, complex_homomorphism)
-        in zip(tensor_products, chain_complex.homomorphisms)
+        in zip(tensor_products, cochain_complex.homomorphisms)
     ]
-    return ChainComplex(tensor_products, tensor_homomorphisms)
+    return CochainComplex(tensor_products, tensor_homomorphisms)
 
 
 def right_tensor_product(
-    chain_complex: ChainComplex,
+    cochain_complex: CochainComplex,
     multiplier: ZModule
-) -> ChainComplex:
+) -> CochainComplex:
     tensor_products = [
             TensorProduct(module, multiplier)
-            for module in chain_complex.modules
+            for module in cochain_complex.modules
         ]
     tensor_homomorphisms = [
         tensor_product.homomorphism(
             complex_homomorphism, Homomorphism.identity(multiplier)
         ) for (tensor_product, complex_homomorphism)
-        in zip(tensor_products, chain_complex.homomorphisms)
+        in zip(tensor_products, cochain_complex.homomorphisms)
     ]
-    return ChainComplex(tensor_products, tensor_homomorphisms)
+    return CochainComplex(tensor_products, tensor_homomorphisms)

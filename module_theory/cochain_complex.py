@@ -8,7 +8,7 @@ ARROW_END_SYMBOL = "--> "
 HOMOMORPHISM_SYMBOL = "d"
 
 
-class ChainComplex:
+class CochainComplex:
     def __init__(self,
                  modules: Sequence[ZModule],
                  homomorphisms: Sequence[Homomorphism]):
@@ -26,17 +26,17 @@ class ChainComplex:
         self.modules: tuple[ZModule, ...] = tuple(modules)
         self.homomorphisms: tuple[Homomorphism, ...] = tuple(homomorphisms)
 
-    def left_pad(self, count: int = 1) -> ChainComplex:
+    def left_pad(self, count: int = 1) -> CochainComplex:
         zero = ZModule.zero()
-        return ChainComplex(
+        return CochainComplex(
             modules=(zero,) * count + self.modules,
             homomorphisms=(Homomorphism.zero(zero, zero),) * (count - 1) +
             (Homomorphism.zero(zero, self.modules[0]),) + self.homomorphisms
         )
 
-    def right_pad(self, count: int = 1) -> ChainComplex:
+    def right_pad(self, count: int = 1) -> CochainComplex:
         zero = ZModule.zero()
-        return ChainComplex(
+        return CochainComplex(
             modules=self.modules + (zero,) * count,
             homomorphisms=self.homomorphisms
             + (Homomorphism.zero(self.modules[-1], zero),)
@@ -56,4 +56,7 @@ class ChainComplex:
             repr_string += str(module)
             repr_string += self.__arrow(index + 1)
         repr_string += "0"
+        repr_string += "\n"
+        for index, homomorphism in enumerate(self.homomorphisms):
+            repr_string += f"{HOMOMORPHISM_SYMBOL}{index+1}: {homomorphism}\n"
         return repr_string

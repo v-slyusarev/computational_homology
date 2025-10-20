@@ -9,7 +9,7 @@ from module_theory.cyclic_zmodule import (
 from module_theory.homomorphism import Homomorphism
 from module_theory.operators.direct_sum import direct_sum
 from module_theory.operators.cyclic_summands import cyclic_summands
-from module_theory.chain_complex import ChainComplex
+from module_theory.cochain_complex import CochainComplex
 
 
 class Hom(ZModule):
@@ -105,40 +105,40 @@ class Hom(ZModule):
 
 
 def left_hom(
-    chain_complex: ChainComplex,
+    cochain_complex: CochainComplex,
     hom_domain: ZModule
-) -> ChainComplex:
-    hom_modules = [Hom(hom_domain, module) for module in chain_complex.modules]
+) -> CochainComplex:
+    hom_modules = [Hom(hom_domain, module) for module in cochain_complex.modules]
 
     induced_homomorphisms = _calcuate_induced_homomorphisms(
         hom_modules,
-        chain_complex.homomorphisms,
+        cochain_complex.homomorphisms,
         lambda source_homomorphism, complex_homomorphism: (
             complex_homomorphism.compose(source_homomorphism)
         )
     )
 
-    return ChainComplex(hom_modules, induced_homomorphisms)
+    return CochainComplex(hom_modules, induced_homomorphisms)
 
 
 def right_hom(
-    chain_complex: ChainComplex,
+    cochain_complex: CochainComplex,
     hom_codomain: ZModule
-) -> ChainComplex:
+) -> CochainComplex:
 
     hom_modules = [
-        Hom(module, hom_codomain) for module in chain_complex.modules
+        Hom(module, hom_codomain) for module in cochain_complex.modules
     ][::-1]
 
     induced_homomorphisms = _calcuate_induced_homomorphisms(
         hom_modules,
-        chain_complex.homomorphisms[-2::-1],  # invert the order
+        cochain_complex.homomorphisms[-2::-1],  # invert the order
         lambda source_homomorphism, complex_homomorphism: (
             source_homomorphism.compose(complex_homomorphism)
         )
     )
 
-    return ChainComplex(hom_modules, induced_homomorphisms)
+    return CochainComplex(hom_modules, induced_homomorphisms)
 
 
 def _calcuate_induced_homomorphisms(

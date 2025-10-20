@@ -79,6 +79,40 @@ class TestHomomorphism(unittest.TestCase):
         self.assertEqual(homomorphism.codomain.rank, 3)
         self.assertEqual(homomorphism.codomain.torsion_numbers, ())
 
+    def test_preimage_identity(self):
+        module = ZModule.free(3)
+        element = module.element([1, 2, -3])
+        homomorphism = Homomorphism.identity(module)
+        preimage = homomorphism.preimage(element)
+        self.assertIsNotNone(preimage)
+        if preimage is None:
+            raise RuntimeError
+        self.assertEqual(preimage.coordinates, (1, 2, -3))
+
+    def test_preimage_zero(self):
+        module = ZModule.free(3)
+        element = module.element([1, 2, -3])
+        homomorphism = Homomorphism.zero(module, module)
+        preimage = homomorphism.preimage(element)
+        self.assertIsNone(preimage)
+
+    def test_preimage_positive(self):
+        module = ZModule.free(3)
+        element = module.element([1, 2, 3])
+        homomorphism = Homomorphism((
+            (1, 2, 3),
+            (4, 5, 6),
+            (7, 8, 9)
+        ))
+
+        image = homomorphism.apply(element)
+        preimage = homomorphism.preimage(image)
+        self.assertIsNotNone(preimage)
+        if preimage is None:
+            raise RuntimeError
+        image_of_preimage = homomorphism.apply(preimage)
+        self.assertEqual(image_of_preimage.coordinates, image.coordinates)
+
 
 if __name__ == '__main__':
     unittest.main()

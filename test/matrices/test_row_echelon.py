@@ -91,8 +91,10 @@ class TestRowEchelon(unittest.TestCase):
 
         self.assertEqual(row_echelon_calculator.row_rank(), 3)
         homomorphism = Homomorphism(array)
-        change_homomorphism = Homomorphism(row_echelon_calculator.change_matrix().array)
-        inverse_change_homomorphism = Homomorphism(row_echelon_calculator.inverse_change_matrix().array)
+        change_homomorphism = Homomorphism(
+            row_echelon_calculator.change_matrix().array)
+        inverse_change_homomorphism = Homomorphism(
+            row_echelon_calculator.inverse_change_matrix().array)
         result_homomorphism = Homomorphism(row_echelon_calculator._array())
 
         self.assertEqual(
@@ -129,10 +131,12 @@ class TestRowEchelon(unittest.TestCase):
             [0, 0, 0],
             [0, 0, 0],
         ])
-        self.assertEqual(row_echelon_calculator.inverse_change_matrix().array, [
-            [1, 0],
-            [0, 1],
-        ])
+        self.assertEqual(
+            row_echelon_calculator.inverse_change_matrix().array,
+            [
+                [1, 0],
+                [0, 1],
+            ])
         self.assertEqual(row_echelon_calculator.change_matrix().array, [
             [1, 0],
             [0, 1],
@@ -153,11 +157,15 @@ class TestRowEchelon(unittest.TestCase):
         self.assertEqual(row_echelon_calculator.row_echelon().array, [
             [1, 0, 0],
             [0, 0, 0],
-        ])
-        self.assertEqual(row_echelon_calculator.inverse_change_matrix().array, [
-            [1, 0],
-            [0, 1],
-        ])
+        ]
+        )
+        self.assertEqual(
+            row_echelon_calculator.inverse_change_matrix().array,
+            [
+                [1, 0],
+                [0, 1],
+            ]
+        )
         self.assertEqual(row_echelon_calculator.change_matrix().array, [
             [1, 0],
             [0, 1],
@@ -179,12 +187,47 @@ class TestRowEchelon(unittest.TestCase):
             [0, 0, 1],
             [0, 0, 0],
         ])
-        self.assertEqual(row_echelon_calculator.inverse_change_matrix().array, [
-            [0, 1],
-            [1, 0],
-        ])
+        self.assertEqual(
+            row_echelon_calculator.inverse_change_matrix().array,
+            [
+                [0, 1],
+                [1, 0],
+            ]
+        )
         self.assertEqual(row_echelon_calculator.change_matrix().array, [
             [0, 1],
             [1, 0],
         ])
         self.assertEqual(row_echelon_calculator.row_rank(), 1)
+
+    def test_row_echelon_degenerate(self):
+        array = [
+            [3, 0, 2],
+            [2, 2, 2],
+            [3, 0, 2]
+        ]
+
+        matrix = Matrix(array)
+        row_echelon_calculator = RowEchelonCalculator(matrix)
+
+        row_echelon_calculator.row_echelon()
+
+        self.assertEqual(row_echelon_calculator.row_echelon().array, [
+            [1, -2, 0],
+            [0, 6, 2],
+            [0, 0, 0],
+        ])
+        self.assertEqual(
+            row_echelon_calculator.inverse_change_matrix().array,
+            [
+                [1, -1, 0],
+                [-2, 3, 0],
+                [-1, 0, 1]
+            ]
+        )
+        self.assertEqual(row_echelon_calculator.change_matrix().array, [
+            [3, 1, 0],
+            [2, 1, 0],
+            [3, 1, 1],
+        ])
+        self.assertEqual(row_echelon_calculator.row_rank(), 2)

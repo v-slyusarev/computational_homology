@@ -54,3 +54,6 @@ class Matrix:
             list(column)
             for column in zip(*self.array)
         ]
+
+    def immutable(self) -> tuple[tuple[int, ...], ...]:
+        return tuple(tuple(row) for row in self.array)

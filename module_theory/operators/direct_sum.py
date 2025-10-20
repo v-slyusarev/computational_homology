@@ -4,12 +4,11 @@ from module_theory.homomorphism import Homomorphism
 
 
 def direct_sum(*modules: ZModule) -> tuple[ZModule, tuple[Homomorphism, ...]]:
-
     direct_sum_module = ZModule(
         rank=sum(module.rank for module in modules),
         torsion_numbers=[factor for module in modules
                          for factor in module.torsion_numbers]
-     )
+    )
 
     embeddings: list[Homomorphism] = []
     free_part_position = 0

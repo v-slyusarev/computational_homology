@@ -96,6 +96,9 @@ class ZModule:
     class Element:
         def __init__(self, module: ZModule, coordinates: Sequence[int]):
             if len(coordinates) != module.dimensions():
+                print("ERROR:")
+                print(coordinates)
+                print(module)
                 raise ValueError("length of coordinates must be equal to " +
                                  "the number of dimensions in module")
 
@@ -110,6 +113,9 @@ class ZModule:
                         coordinates[module.rank:], module.torsion_numbers
                     )
                 )
+
+        def is_zero(self) -> bool:
+            return not any(self.coordinates)
 
         def __add__(self, other: ZModule.Element) -> ZModule.Element:
             if (

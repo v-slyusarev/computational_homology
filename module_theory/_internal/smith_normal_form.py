@@ -1,30 +1,50 @@
+from __future__ import annotations
+from collections.abc import Sequence
 from module_theory._internal.matrix import Matrix
 from module_theory._internal.matrix_manipulator import MatrixManipulator
+from dataclasses import dataclass
 
 
 class SmithNormalFormCalculator:
-    def __init__(self, matrix: Matrix, /, calculate_instantly: bool = True):
+    def __init__(self, array: Sequence[Sequence[int]],
+                 /, calculate_instantly: bool = True):
+        matrix = Matrix(array)
         self._matrix_manipulator: MatrixManipulator = MatrixManipulator(matrix)
         self._complete = False
         if calculate_instantly:
             self._calculate()
         self._complete = True
 
-    def smith_normal_form(self) -> Matrix:
+    def smith_normal_form(self) -> SmithNormalForm:
         if not self._complete:
             raise RuntimeError("Not calculated yet")
-        return self._matrix_manipulator.matrix
+        matrix = self._matrix_manipulator.matrix.immutable()
+        return SmithNormalForm(
+            matrix=matrix,
+            diagonal=tuple(
+                row[row_index] for row_index, row
+                in enumerate(matrix[:self.rank()])
+            ),
+            row_change_matrix=self._row_change_matrix().immutable(),
+            inverse_row_change_matrix=(self._inverse_row_change_matrix()
+                                           .immutable()),
+            column_change_matrix=self._column_change_matrix().immutable(),
+            inverse_column_change_matrix=(self._inverse_column_change_matrix()
+                                              .immutable()),
+            rank=self.rank(),
+            unit_entry_count=self.unit_entry_count()
+        )
 
-    def row_change_matrix(self) -> Matrix:
+    def _row_change_matrix(self) -> Matrix:
         return self._matrix_manipulator.row_change_matrix
 
-    def inverse_row_change_matrix(self) -> Matrix:
+    def _inverse_row_change_matrix(self) -> Matrix:
         return self._matrix_manipulator.inverse_row_change_matrix
 
-    def column_change_matrix(self) -> Matrix:
+    def _column_change_matrix(self) -> Matrix:
         return self._matrix_manipulator.column_change_matrix
 
-    def inverse_column_change_matrix(self) -> Matrix:
+    def _inverse_column_change_matrix(self) -> Matrix:
         return self._matrix_manipulator.inverse_column_change_matrix
 
     def rank(self) -> int:
@@ -139,3 +159,15 @@ class SmithNormalFormCalculator:
             pivot_index += 1
 
         self._rank = pivot_index
+
+
+@dataclass(frozen=True)
+class SmithNormalForm:
+    matrix: tuple[tuple[int, ...], ...]
+    diagonal: tuple[int, ...]
+    row_change_matrix: tuple[tuple[int, ...], ...]
+    inverse_row_change_matrix: tuple[tuple[int, ...], ...]
+    column_change_matrix: tuple[tuple[int, ...], ...]
+    inverse_column_change_matrix: tuple[tuple[int, ...], ...]
+    rank: int
+    unit_entry_count: int

@@ -11,9 +11,8 @@ class TestSmithNormalForm(unittest.TestCase):
             [-4, 0, 3],
             [0, -10, -2]
         ]
-        matrix = Matrix(array)
         calculator = SmithNormalFormCalculator(
-            matrix, calculate_instantly=False
+            array, calculate_instantly=False
         )
         calculator._move_minimal_nonzero_entry(1)
         self.assertEqual(
@@ -31,9 +30,8 @@ class TestSmithNormalForm(unittest.TestCase):
             [4, 5, 6],
             [7, 8, 9]
         ]
-        matrix = Matrix(array)
         calculator = SmithNormalFormCalculator(
-            matrix, calculate_instantly=False
+            array, calculate_instantly=False
         )
         result = calculator._find_nondivisible_entry(0)
         self.assertIsNone(result)
@@ -44,9 +42,8 @@ class TestSmithNormalForm(unittest.TestCase):
             [4, 5, -10],
             [7, -8, 15]
         ]
-        matrix = Matrix(array)
         calculator = SmithNormalFormCalculator(
-            matrix, calculate_instantly=False
+            array, calculate_instantly=False
         )
         result = calculator._find_nondivisible_entry(1)
         self.assertEqual(result, (2, 1, -2))
@@ -57,9 +54,8 @@ class TestSmithNormalForm(unittest.TestCase):
             [6, 5, 4],
             [7, 8, 9]
         ]
-        matrix = Matrix(array)
         calculator = SmithNormalFormCalculator(
-            matrix, calculate_instantly=False
+            array, calculate_instantly=False
         )
         calculator._smith_normal_form_step(0)
         self.assertEqual(calculator._array(), [
@@ -67,22 +63,22 @@ class TestSmithNormalForm(unittest.TestCase):
             [0, 9, 18],
             [0, 13, 26]
         ])
-        self.assertEqual(calculator.row_change_matrix().array, [
+        self.assertEqual(calculator._row_change_matrix().array, [
             [7, 1, 1],
             [4, 0, 1],
             [9, 0, 2]
         ])
-        self.assertEqual(calculator.inverse_row_change_matrix().array, [
+        self.assertEqual(calculator._inverse_row_change_matrix().array, [
             [0, -2, 1],
             [1, 5, -3],
             [0, 9, -4]
         ])
-        self.assertEqual(calculator.column_change_matrix().array, [
+        self.assertEqual(calculator._column_change_matrix().array, [
             [0, 0, 1],
             [0, 1, 0],
             [1, 2, 5]
         ])
-        self.assertEqual(calculator.inverse_column_change_matrix().array, [
+        self.assertEqual(calculator._inverse_column_change_matrix().array, [
             [-5, -2, 1],
             [0, 1, 0],
             [1, 0, 0]
@@ -144,34 +140,35 @@ class TestSmithNormalForm(unittest.TestCase):
             [0, 2, 0],
             [2, 2, 2]
         ]
-        matrix = Matrix(array)
-        calculator = SmithNormalFormCalculator(matrix)
-        # calculator._smith_normal_form_step(0)
-        self.assertEqual(calculator._array(), [
-            [1, 0, 0],
-            [0, 2, 0],
-            [0, 0, 0]
-        ])
-        self.assertEqual(calculator.inverse_row_change_matrix().array, [
-            [1, 0, 0],
-            [0, 0, 1],
-            [2, 1, -3]
-        ])
-        self.assertEqual(calculator.row_change_matrix().array, [
-            [1, 0, 0],
-            [-2, 3, 1],
-            [0, 1, 0]
-        ])
-        self.assertEqual(calculator.column_change_matrix().array, [
-            [1, -2, -1],
-            [-1, 3, 0],
-            [0, 0, 1]
-        ])
-        self.assertEqual(calculator.inverse_column_change_matrix().array, [
-            [3, 2, 3],
-            [1, 1, 1],
-            [0, 0, 1]
-        ])
+        calculator = SmithNormalFormCalculator(array)
+        smith_normal_form = calculator.smith_normal_form()
+        self.assertEqual(smith_normal_form.matrix, (
+            (1, 0, 0),
+            (0, 2, 0),
+            (0, 0, 0)
+        ))
+        self.assertEqual(smith_normal_form.inverse_row_change_matrix, (
+            (1, 0, 0),
+            (0, 0, 1),
+            (2, 1, -3)
+        ))
+        self.assertEqual(smith_normal_form.row_change_matrix, (
+            (1, 0, 0),
+            (-2, 3, 1),
+            (0, 1, 0)
+        ))
+        self.assertEqual(smith_normal_form.column_change_matrix, (
+            (1, -2, -1),
+            (-1, 3, 0),
+            (0, 0, 1)
+        ))
+        self.assertEqual(smith_normal_form.inverse_column_change_matrix, (
+            (3, 2, 3),
+            (1, 1, 1),
+            (0, 0, 1)
+        ))
+        self.assertEqual(smith_normal_form.rank, 2)
+        self.assertEqual(smith_normal_form.unit_entry_count, 1)
 
 
 if __name__ == '__main__':
