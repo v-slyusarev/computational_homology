@@ -11,11 +11,6 @@ def cohomology(cochain_complex: CochainComplex) -> list[ZModule]:
         kernel_generator_sets.append(homomorphism.kernel_generators())
         image_generator_sets.append(homomorphism.canonical_generator_images())
 
-    print("kernel_generator_sets")
-    print(kernel_generator_sets)
-    print("image_generator_sets")
-    print(image_generator_sets)
-
     return [
         SubmoduleQuotient(kernel_generator_set, image_generator_set)
         for kernel_generator_set, image_generator_set
