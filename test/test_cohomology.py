@@ -132,7 +132,6 @@ class TestCohomology(unittest.TestCase):
             homomorphisms=[d1, d2]
         )
         H = cohomology(cochain_complex)
-        print("Result:", H)
         self.assertEqual(len(H), 3)
         self.assertTrue(H[0].is_zero())
         self.assertTrue(H[1].is_zero())
@@ -157,13 +156,12 @@ class TestCohomology(unittest.TestCase):
             homomorphisms=[d1, d2]
         )
         H = cohomology(cochain_complex)
-        print("Result:", H)
         self.assertEqual(len(H), 3)
         self.assertTrue(H[0].is_zero())
         self.assertTrue(H[1].is_identical_to(TorsionCyclicZModule(2)))
         self.assertTrue(H[2].is_zero())
 
-    def test_torsion_multiple(self):
+    def test_torsion_two(self):
         Z20 = TorsionCyclicZModule(20)
         d1 = Homomorphism(((4,),), Z20, Z20)
         d2 = Homomorphism(((10,),), Z20, Z20)
@@ -172,11 +170,52 @@ class TestCohomology(unittest.TestCase):
             homomorphisms=[d1, d2]
         )
         H = cohomology(cochain_complex)
-        print("Result:", H)
         self.assertEqual(len(H), 3)
         self.assertTrue(H[0].is_identical_to(TorsionCyclicZModule(4)))
         self.assertTrue(H[1].is_identical_to(TorsionCyclicZModule(2)))
         self.assertTrue(H[2].is_identical_to(TorsionCyclicZModule(10)))
+
+    def test_torsion_three(self):
+        C0 = ZModule(0, [4, 6])
+        C1 = ZModule(0, [2, 6])
+        C2 = ZModule(0, [6])
+        d1 = Homomorphism((
+            (1, 1),
+            (0, 2),
+        ), C0, C1)
+        d2 = Homomorphism(((0, 3),), C1, C2)
+        cochain_complex = CochainComplex(
+            modules=[C0, C1, C2],
+            homomorphisms=[d1, d2]
+        )
+        H = cohomology(cochain_complex)
+        self.assertEqual(len(H), 3)
+        self.assertTrue(H[0].is_identical_to(TorsionCyclicZModule(4)))
+        self.assertTrue(H[1].is_zero())
+        self.assertTrue(H[2].is_identical_to(TorsionCyclicZModule(3)))
+
+    def test_mixed_three(self):
+        C0 = ZModule(1, [4])
+        C1 = ZModule(2, [2])
+        C2 = ZModule(1, [4])
+        d1 = Homomorphism((
+            (1, 0),
+            (2, 0),
+            (1, 1),
+        ), C0, C1)
+        d2 = Homomorphism((
+            (-2, 1, 0),
+            (0, 0, 0),
+        ), C1, C2)
+        cochain_complex = CochainComplex(
+            modules=[C0, C1, C2],
+            homomorphisms=[d1, d2]
+        )
+        H = cohomology(cochain_complex)
+        self.assertEqual(len(H), 3)
+        self.assertTrue(H[0].is_identical_to(TorsionCyclicZModule(2)))
+        self.assertTrue(H[1].is_zero())
+        self.assertTrue(H[2].is_identical_to(TorsionCyclicZModule(4)))
 
 
 if __name__ == '__main__':

@@ -80,7 +80,7 @@ class SmithNormalFormCalculator:
                 if value == 0:
                     continue
                 if not min_nonzero_value or abs(value) < min_nonzero_value:
-                    min_nonzero_value = value
+                    min_nonzero_value = abs(value)
                     min_nonzero_value_row = row_index
                     min_nonzero_value_column = column_index
 
@@ -110,7 +110,8 @@ class SmithNormalFormCalculator:
         return None
 
     def _smith_normal_form_step(self, pivot_index: int):
-        while True:
+        # while True:
+        for _ in range(100):
             self._move_minimal_nonzero_entry(pivot_index)
             self._matrix_manipulator.reduce_rows_by_pivot(
                 pivot_index, pivot_index

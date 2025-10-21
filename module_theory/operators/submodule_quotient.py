@@ -13,9 +13,6 @@ class SubmoduleQuotient(ZModule):
     def __init__(self,
                  generators: Sequence[ZModule.Element],
                  kernel_generators: Sequence[ZModule.Element]):
-        print("SubmoduleQuotient")
-        print(generators)
-        print(kernel_generators)
 
         generators = reduction(generators)
 
@@ -62,10 +59,6 @@ class SubmoduleQuotient(ZModule):
         orders_of_generators = [
             generator.order() for generator in self.quotient_generators
         ]
-        print("smith_normal_form.diagonal")
-        print(smith_normal_form.diagonal[:smith_normal_form.rank])
-        print("orders_of_generators")
-        print(orders_of_generators)
 
         rank = 0
         torsion_numbers: list[int] = []
@@ -87,7 +80,6 @@ class SubmoduleQuotient(ZModule):
             else:
                 torsion_numbers.append(generator_order)
 
-        print(rank, torsion_numbers)
         super().__init__(rank, torsion_numbers)
 
 

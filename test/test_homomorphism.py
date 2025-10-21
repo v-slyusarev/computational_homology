@@ -189,7 +189,7 @@ class TestHomomorphism(unittest.TestCase):
             kernel_generators[2].coordinates, (0, 0, 0, 4)
         )
 
-    def test_torsion_to_torsion(self):
+    def test_kernel_torsion_to_torsion(self):
         domain = ZModule(1, [4])
         codomain = ZModule(1, [2])
         homomorphism = Homomorphism((
@@ -200,6 +200,19 @@ class TestHomomorphism(unittest.TestCase):
         self.assertEqual(len(kernel_generators), 1)
         self.assertEqual(
             kernel_generators[0].coordinates, (0, 2)
+        )
+
+    def test_kernel_torsion_to_torsion_hard(self):
+        domain = ZModule(0, [4, 6])
+        codomain = ZModule(0, [2, 6])
+        homomorphism = Homomorphism((
+            (1, 1),
+            (0, 2)
+        ), domain, codomain)
+        kernel_generators = homomorphism.kernel_generators()
+        self.assertEqual(len(kernel_generators), 1)
+        self.assertEqual(
+            kernel_generators[0].coordinates, (1, 3)
         )
 
 
