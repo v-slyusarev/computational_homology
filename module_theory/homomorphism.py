@@ -6,6 +6,7 @@ from module_theory._internal.smith_normal_form import (
     SmithNormalForm, SmithNormalFormCalculator
 )
 from module_theory._internal.kernel_and_image import KernelAndImageCalculator
+from module_theory._internal.reduction import reduction
 
 
 class Homomorphism:
@@ -83,7 +84,6 @@ class Homomorphism:
     ):
         codomain = images[0].module
         if not all(image.module.is_identical_to(codomain) for image in images):
-            print([(image, image.module) for image in images])
             raise ValueError("All images must belong to the same module")
         return Homomorphism(([
             tuple(combination_of_coordinates)
@@ -175,15 +175,39 @@ class Homomorphism:
 
     def kernel_generators(self) -> list[ZModule.Element]:
         if not self._kernel_generators:
-            kernel = KernelAndImageCalculator(self.matrix).kernel
+
+            extended_matrix = tuple(
+                matrix_row + torsion_submatrix_row
+                for (matrix_row, torsion_submatrix_row)
+                in zip(self.matrix, self._torsion_submatrix())
+            )
+            kernel = KernelAndImageCalculator(extended_matrix).kernel
             self._kernel_generators = tuple(
-                self.domain.element(coordinates_list)
+                self.domain.element(
+                    coordinates_list[:self.domain.dimensions()]
+                )
                 for coordinates_list in kernel
             )
-        return list(self._kernel_generators)
+
+        return reduction(self._kernel_generators)
 
     def __repr__(self) -> str:
         return (
             f"{self.domain} --> {self.codomain},\n" +
             "\n".join(str(row) for row in self.matrix)
         )
+
+    def _torsion_submatrix(self) -> tuple[tuple[int, ...], ...]:
+        return (
+            (
+                tuple(0 for _ in self.codomain.torsion_numbers),
+            ) * self.codomain.rank
+            + tuple(
+                tuple(
+                    -torsion_number if row_index == column_index else 0
+                    for (column_index, torsion_number)
+                    in enumerate(self.codomain.torsion_numbers)
+                )
+                for row_index, _ in enumerate(self.codomain.torsion_numbers)
+            )
+        ) or ((),)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from collections.abc import Sequence
+from math import gcd, lcm
 
 DIRECT_SUM_SEPARATOR_SYMBOL = " ⊕ "
 Z_SYMBOL = "ℤ"
@@ -116,6 +117,22 @@ class ZModule:
 
         def is_zero(self) -> bool:
             return not any(self.coordinates)
+
+        def order(self) -> int | None:
+            if self.is_zero():
+                return 1
+
+            if any(self.coordinates[:self.module.rank]):
+                return None
+
+            torsion_coordinates = self.coordinates[self.module.rank:]
+            quotients = [
+                torsion_number // gcd(torsion_number, coordinate)
+                for coordinate, torsion_number
+                in zip(torsion_coordinates, self.module.torsion_numbers)
+                if coordinate
+            ]
+            return lcm(*quotients)
 
         def __add__(self, other: ZModule.Element) -> ZModule.Element:
             if (

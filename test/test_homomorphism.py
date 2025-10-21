@@ -113,6 +113,95 @@ class TestHomomorphism(unittest.TestCase):
         image_of_preimage = homomorphism.apply(preimage)
         self.assertEqual(image_of_preimage.coordinates, image.coordinates)
 
+    def test_torsion_submatrix_trivial(self):
+        module = ZModule.free(4)
+        homomorphism = Homomorphism.identity(module)
+        self.assertEqual(
+            homomorphism._torsion_submatrix(),
+            ((), (), (), ())
+        )
+
+    def test_torsion_submatrix_zero_rank(self):
+        domain = ZModule.free(4)
+        codomain = ZModule(0, [2])
+        homomorphism = Homomorphism.zero(domain, codomain)
+        self.assertEqual(
+            homomorphism._torsion_submatrix(),
+            (
+                (-2,),
+            )
+        )
+
+    def test_torsion_submatrix_single(self):
+        domain = ZModule.free(4)
+        codomain = ZModule(2, [2])
+        homomorphism = Homomorphism.zero(domain, codomain)
+        self.assertEqual(
+            homomorphism._torsion_submatrix(),
+            (
+                (0,),
+                (0,),
+                (-2,),
+            )
+        )
+
+    def test_torsion_submatrix_multiple(self):
+        domain = ZModule.free(4)
+        codomain = ZModule(1, [2, 2, 3])
+        homomorphism = Homomorphism.zero(domain, codomain)
+        self.assertEqual(
+            homomorphism._torsion_submatrix(),
+            (
+                (0, 0, 0),
+                (-2, 0, 0),
+                (0, -2, 0),
+                (0, 0, -3)
+            )
+        )
+
+    def test_torsion_submatrix_zero(self):
+        domain = ZModule.free(1)
+        codomain = ZModule.zero()
+        homomorphism = Homomorphism.zero(domain, codomain)
+        self.assertEqual(
+            homomorphism._torsion_submatrix(),
+            ((),)
+        )
+
+    def test_kernel_with_torsion(self):
+        domain = ZModule.free(4)
+        codomain = ZModule(1, [2, 2, 4])
+        homomorphism = Homomorphism((
+            (1, 0, 0, 0),
+            (0, 1, 0, 0),
+            (0, 0, 1, 0),
+            (0, 0, 0, 1)
+        ), domain, codomain)
+        kernel_generators = homomorphism.kernel_generators()
+        self.assertEqual(len(kernel_generators), 3)
+        self.assertEqual(
+            kernel_generators[0].coordinates, (0, 2, 0, 0)
+        )
+        self.assertEqual(
+            kernel_generators[1].coordinates, (0, 0, 2, 0)
+        )
+        self.assertEqual(
+            kernel_generators[2].coordinates, (0, 0, 0, 4)
+        )
+
+    def test_torsion_to_torsion(self):
+        domain = ZModule(1, [4])
+        codomain = ZModule(1, [2])
+        homomorphism = Homomorphism((
+            (2, 0),
+            (0, 1)
+        ), domain, codomain)
+        kernel_generators = homomorphism.kernel_generators()
+        self.assertEqual(len(kernel_generators), 1)
+        self.assertEqual(
+            kernel_generators[0].coordinates, (0, 2)
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

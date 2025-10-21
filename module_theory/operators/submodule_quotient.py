@@ -1,14 +1,21 @@
+from typing import Any
+
+
 from collections.abc import Sequence
 from module_theory.zmodule import ZModule
 from module_theory.homomorphism import Homomorphism
 from module_theory._internal.smith_normal_form import SmithNormalFormCalculator
-from module_theory._internal.reduce import reduction
+from module_theory._internal.reduction import reduction
+import itertools
 
 
 class SubmoduleQuotient(ZModule):
     def __init__(self,
                  generators: Sequence[ZModule.Element],
                  kernel_generators: Sequence[ZModule.Element]):
+        print("SubmoduleQuotient")
+        print(generators)
+        print(kernel_generators)
 
         generators = reduction(generators)
 
@@ -52,12 +59,36 @@ class SubmoduleQuotient(ZModule):
                                     .canonical_generator_images()
         )
 
-        torsions = smith_normal_form.diagonal[:smith_normal_form.rank]
-        rank = len(generators) - len(torsions)
+        orders_of_generators = [
+            generator.order() for generator in self.quotient_generators
+        ]
+        print("smith_normal_form.diagonal")
+        print(smith_normal_form.diagonal[:smith_normal_form.rank])
+        print("orders_of_generators")
+        print(orders_of_generators)
 
-        super().__init__(
-            rank, [torsion for torsion in torsions if torsion > 1]
-        )
+        rank = 0
+        torsion_numbers: list[int] = []
+        for (generator_order, quotient_torsion) in itertools.zip_longest(
+            orders_of_generators,
+            smith_normal_form.diagonal[:smith_normal_form.rank]
+        ):
+            # First branch: this element spans some kernel generator
+            if quotient_torsion:
+                # Add if it spans a multiple of that generator,
+                # Otherwise it is killed off: do nothing
+                if quotient_torsion >= 2:
+                    torsion_numbers.append(quotient_torsion)
+            # Second branch: this element spans no kernel generator
+            # If this element is torsion-free, it contributes to the rank
+            elif not generator_order:
+                rank += 1
+            # Otherwise it contributes to the torsion
+            else:
+                torsion_numbers.append(generator_order)
+
+        print(rank, torsion_numbers)
+        super().__init__(rank, torsion_numbers)
 
 
 class Submodule(SubmoduleQuotient):

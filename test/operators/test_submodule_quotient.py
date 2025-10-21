@@ -65,7 +65,6 @@ class TestSubmoduleQuotient(unittest.TestCase):
     def test_quotient_with_torsion(self):
         module = ZModule.free(3)
         quotient = Quotient(module, [module.element([2, 4, 6])])
-        print(quotient)
         self.assertTrue(quotient.is_identical_to(ZModule(2, [2])))
 
 

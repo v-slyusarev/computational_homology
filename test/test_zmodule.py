@@ -114,6 +114,31 @@ class TestZModule(unittest.TestCase):
         self.assertEqual(generators[3].coordinates, (0, 0, 0, 1, 0))
         self.assertEqual(generators[4].coordinates, (0, 0, 0, 0, 1))
 
+    def test_order_zero(self):
+        module = ZModule(2, [3, 3, 18])
+        element = module.zero_element()
+        self.assertEqual(element.order(), 1)
+
+    def test_order_infinite(self):
+        module = ZModule(2, [3, 3, 18])
+        element = module.element([-3, 0, 1, 2, 3])
+        self.assertIsNone(element.order())
+
+    def test_order_simple(self):
+        module = ZModule(2, [3, 3, 18])
+        element = module.element([0, 0, 0, 0, 1])
+        self.assertEqual(element.order(), 18)
+
+    def test_order_gcd(self):
+        module = ZModule(2, [3, 3, 18])
+        element = module.element([0, 0, 0, 0, 15])
+        self.assertEqual(element.order(), 6)
+
+    def test_order_multiple(self):
+        module = ZModule(2, [3, 12])
+        element = module.element([0, 0, 1, 3])
+        self.assertEqual(element.order(), 12)
+
 
 if __name__ == '__main__':
     unittest.main()
