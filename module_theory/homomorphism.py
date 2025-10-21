@@ -83,6 +83,7 @@ class Homomorphism:
     ):
         codomain = images[0].module
         if not all(image.module.is_identical_to(codomain) for image in images):
+            print([(image, image.module) for image in images])
             raise ValueError("All images must belong to the same module")
         return Homomorphism(([
             tuple(combination_of_coordinates)

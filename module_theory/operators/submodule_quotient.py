@@ -10,7 +10,8 @@ class SubmoduleQuotient(ZModule):
                  kernel_generators: Sequence[ZModule.Element]):
 
         if not generators:
-            return ZModule.zero()
+            super().__init__(0, ())
+            return
 
         self.original_module = generators[0].module
 
@@ -22,7 +23,7 @@ class SubmoduleQuotient(ZModule):
             Homomorphism.from_canonical_generator_images(generators)
         )
 
-        preimages: list[ZModule.Element] = []
+        preimages = [projection_to_generators.domain.zero_element()]
         for kernel_generator in kernel_generators:
             preimage = projection_to_generators.preimage(kernel_generator)
             if preimage is None:
