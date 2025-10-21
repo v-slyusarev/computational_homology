@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from module_theory.zmodule import ZModule
 from module_theory.homomorphism import Homomorphism
 from module_theory._internal.smith_normal_form import SmithNormalFormCalculator
+from module_theory._internal.reduce import reduction
 
 
 class SubmoduleQuotient(ZModule):
@@ -9,7 +10,9 @@ class SubmoduleQuotient(ZModule):
                  generators: Sequence[ZModule.Element],
                  kernel_generators: Sequence[ZModule.Element]):
 
-        if not generators:
+        generators = reduction(generators)
+
+        if all(generator.is_zero() for generator in generators):
             super().__init__(0, ())
             return
 
@@ -55,3 +58,15 @@ class SubmoduleQuotient(ZModule):
         super().__init__(
             rank, [torsion for torsion in torsions if torsion > 1]
         )
+
+
+class Submodule(SubmoduleQuotient):
+    def __init__(self, generators: Sequence[ZModule.Element]):
+        super().__init__(generators, [])
+
+
+class Quotient(SubmoduleQuotient):
+    def __init__(
+        self, module: ZModule, kernel_generators: Sequence[ZModule.Element]
+    ):
+        super().__init__(module.canonical_generators(), kernel_generators)
