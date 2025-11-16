@@ -150,6 +150,16 @@ class ZModule:
             else:
                 return self
 
+        def __mul__(self, other: object) -> ZModule.Element:
+            if isinstance(other, int):
+                return self.module.element(
+                    [other * value for value in self.coordinates]
+                )
+            else:
+                return self
+
+        __rmul__ = __mul__
+
         def __repr__(self) -> str:
             if self.module.is_zero():
                 return "0"

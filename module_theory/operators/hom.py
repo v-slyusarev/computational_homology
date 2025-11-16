@@ -97,11 +97,11 @@ class Hom(ZModule):
             matrix, self.domain, self.codomain
         )
 
-    def standard_form(self) -> str:
-        return super().__repr__()
+    # def standard_form(self) -> str:
+    #     return super().__repr__()
 
-    def __repr__(self) -> str:
-        return f"Hom({self.domain}, {self.codomain})"
+    # def __repr__(self) -> str:
+    #     return f"Hom({self.domain}, {self.codomain})"
 
 
 def left_hom(

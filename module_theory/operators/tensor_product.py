@@ -106,14 +106,14 @@ class TensorProduct(ZModule):
             canonical_generator_images, self
         )
 
-    def standard_form(self) -> str:
-        return super().__repr__()
+    # def standard_form(self) -> str:
+    #     return super().__repr__()
 
-    def __repr__(self) -> str:
-        return TENSOR_PRODUCT_SEPARATOR_SYMBOL.join(
-            f"({module})" if module.dimensions() > 1 else str(module)
-            for module in self.multipliers
-        )
+    # def __repr__(self) -> str:
+    #     return TENSOR_PRODUCT_SEPARATOR_SYMBOL.join(
+    #         f"({module})" if module.dimensions() > 1 else str(module)
+    #         for module in self.multipliers
+    #     )
 
 
 def left_tensor_product(
